@@ -106,7 +106,21 @@ async function buscarCEP(cep, setData) {
     state: data.uf
   }));
 }
-const filteredAppointments = myAppointments.filter(a =>!filterDate || a.date === filterDate);
+const filteredAppointments = myAppointments.filter(
+  a => !filterDate || a.date === filterDate
+);
+const [newUser, setNewUser] = useState({
+  name: "",
+  email: "",
+  password: "",
+  cep: "",
+  address: "",
+  number: "",
+  complement: "",
+  neighborhood: "",
+  city: "",
+  state: ""
+});
 /* ===================== APP ===================== */
 export default function App() {
   const [screen, setScreen] = useState("login");
@@ -132,6 +146,8 @@ export default function App() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+
 
   const myPatients = patients.filter(p => p.professionalId === currentUser?.id);
   const myAppointments = appointments.filter(a => a.professionalId === currentUser?.id);
@@ -222,13 +238,13 @@ export default function App() {
             placeholder="Senha"
             onChange={e=>setLoginPass(e.target.value)}
           />
-          <span onClick={()=>setShowPassword(!showPassword)} style={{padding:10,cursor:"pointer"}}>
+          <span onClick={()=>setShowRegisterPassword(!showRegisterPassword)} style={{padding:10,cursor:"pointer"}}>
             {showPassword ? <FiEyeOff /> : <FiEye />}
           </span>
         </div>
         <button style={{...primaryBtn,width:"100%"}} onClick={handleLogin}>Entrar</button>
         <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("register")}>Cadastrar</button>
-        <button style={{ ...ghostBtn, width: "100%", marginTop: 8 }}nClick={() => setScreen("resetSenha")}>Esqueci minha senha</button>
+        <button style={{ ...ghostBtn, width: "100%", marginTop: 8 }}onClick={() => setScreen("resetSenha")}>Esqueci minha senha</button>
       </div>
     </div>
   );
@@ -238,7 +254,7 @@ export default function App() {
        <h2>Novo Usuário</h2>
         <input style={input} placeholder="Nome" onChange={e=>setNewUser({...newUser,name:e.target.value})}/>
          <input style={input} placeholder="Email" onChange={e=>setNewUser({...newUser,email:e.target.value})}/>
-         <input style={input} placeholder="CEP"value={tempPatient.cep}onChange={e=>{const cep = e.target.value.replace(/\D/g,"");setTempPatient({...tempPatient,cep});buscarCEP(cep, setTempPatient);}}/>
+         <input style={input} placeholder="CEP"value={tempPatient.cep}onChange={e=>{const cep = e.target.value.replace(/\D/g,"");setNewUser({...newUser, cep});buscarCEP(cep, setNewUser);({...tempPatient,cep});buscarCEP(cep, setTempPatient);}}/>
           <input style={input} placeholder="Rua"/>
            <input style={input} placeholder="Número"/>
             <input style={input} placeholder="Complemento"/>
@@ -247,7 +263,7 @@ export default function App() {
                <input style={input} placeholder="Estado"/>
          <div style={{ display: "flex", alignItems: "center", border: "1px solid #ccc", borderRadius: 8, marginBottom: 14, background: "#fff" }} >
            <input style={{ ...input, border: "none", marginBottom: 0, flex: 1 }} type={showRegisterPassword ? "text" : "password"}placeholder="Senha"onChange={e =>setNewUser({ ...newUser, password: e.target.value })}/>
-            <span onClick={() => setShowPassword(!showPassword)} style={{ cursor: "pointer", padding: "0 12px", fontSize: 18, color: "#666" }} > {showPassword ? <FiEyeOff /> : <FiEye />} </span> 
+            <span onClick={() =>setShowRegisterPassword(!showRegisterPassword)}style={{ cursor: "pointer", padding: "0 12px", fontSize: 18, color: "#666" }} > {showPassword ? <FiEyeOff /> : <FiEye />} </span> 
             </div>
              <button style={primaryBtn} onClick={handleRegister}>Salvar</button>
               </div>
@@ -324,7 +340,7 @@ export default function App() {
   );
   if (screen === "novoPaciente") return layout( 
   <>
-   <VolarMennu setScreen={setScreen} />
+  <VoltarMenu setScreen={setScreen} />
     <Card title="Novo Paciente">
        <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({...tempPatient,name:e.target.value})}/>
         <input style={input} placeholder="Email" value={tempPatient.email} onChange={e=>setTempPatient({...tempPatient,email:e.target.value})}/>
@@ -346,7 +362,7 @@ export default function App() {
     <>
       <VoltarMenu setScreen={setScreen} />
       <Card title="Agenda">
-        <input type="date"style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
+        <input type="date"style={input}value={scheduleDate}onChange={e=>setScheduleDate(e.target.value)}/>
         <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>+ Novo Agendamento</button>
         {filteredAppointments.map(a =>(
           <div key={a.id}>
@@ -371,13 +387,12 @@ export default function App() {
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
-        <input type="date"style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
+        <input type="date"style={input}value={scheduleDate}onChange={e=>setScheduleDate(e.target.value)}/>
         <input type="time" style={input} onChange={e=>setScheduleTime(e.target.value)} />
         <button style={primaryBtn} onClick={saveAppointment}>Salvar</button>
       </Card>
     </>
   );
-
   if (screen === "novoAtendimento") return layout(
     <>
       <VoltarMenu setScreen={setScreen} />
@@ -402,7 +417,43 @@ export default function App() {
     );
   }
   if (screen == "resetSenha"){
+    if (screen === "resetSenha") return (
+  <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
+    <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
+      <h2>Redefinir senha</h2>
 
+      <input
+        style={input}
+        placeholder="Email"
+        value={loginEmail}
+        onChange={e=>setLoginEmail(e.target.value)}
+      />
+
+      <input
+        style={input}
+        type="password"
+        placeholder="Nova senha"
+        value={loginPass}
+        onChange={e=>setLoginPass(e.target.value)}
+      />
+
+      <button
+        style={primaryBtn}
+        onClick={()=>{
+          const idx = users.findIndex(u=>u.email===loginEmail);
+          if (idx === -1) return alert("Email não encontrado");
+
+          const copy = [...users];
+          copy[idx] = { ...copy[idx], password: loginPass };
+          setUsers(copy);
+          setScreen("login");
+        }}
+      >
+        Salvar nova senha
+      </button>
+    </div>
+  </div>
+);
   }
   return null;
 }
