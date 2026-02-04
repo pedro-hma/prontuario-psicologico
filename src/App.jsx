@@ -90,7 +90,23 @@ function Card({ title, children }) {
     </div>
   );
 }
+async function buscarCEP(cep, setData) {
+  if (cep.length !== 8) return;
 
+  const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  const data = await res.json();
+
+  if (data.erro) return alert("CEP inválido");
+
+  setData(prev => ({
+    ...prev,
+    address: data.logradouro,
+    neighborhood: data.bairro,
+    city: data.localidade,
+    state: data.uf
+  }));
+}
+const filteredAppointments = myAppointments.filter(a =>!filterDate || a.date === filterDate);
 /* ===================== APP ===================== */
 export default function App() {
   const [screen, setScreen] = useState("login");
@@ -115,6 +131,7 @@ export default function App() {
   const [schedulePatient, setSchedulePatient] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
   const myPatients = patients.filter(p => p.professionalId === currentUser?.id);
   const myAppointments = appointments.filter(a => a.professionalId === currentUser?.id);
@@ -130,8 +147,25 @@ export default function App() {
     setCurrentUser(u);
     setScreen("menu");
   }
+  function handleRegister() {
+  const { name, email, password, cep, address, number, city, state } = newUser;
 
+  if (!name || !email || !password || !cep || !address || !number) {
+    return alert("Preencha todos os campos");
+  }
+
+  setUsers([...users, { id: Date.now(), ...newUser }]);
+  setScreen("login");
+}
   function addPatient() {
+    const {
+    name, cep, address, number,
+    neighborhood, city, state
+  } = tempPatient;
+
+  if (!name || !cep || !address || !number || !city || !state) {
+    return alert("Preencha todos os campos obrigatórios");
+  }
     if (!tempPatient.name) return;
     if (editingPatient) {
       setPatients(patients.map(p => p.id === editingPatient.id ? tempPatient : p));
@@ -142,7 +176,6 @@ export default function App() {
     setTempPatient({ name: "" });
     setScreen("pacientes");
   }
-
   function saveAppointment() {
     if (!schedulePatient || !scheduleDate || !scheduleTime) return;
     const p = myPatients.find(p => p.id === Number(schedulePatient));
@@ -199,6 +232,27 @@ export default function App() {
       </div>
     </div>
   );
+  if (screen === "register") return
+   ( <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
+     <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
+       <h2>Novo Usuário</h2>
+        <input style={input} placeholder="Nome" onChange={e=>setNewUser({...newUser,name:e.target.value})}/>
+         <input style={input} placeholder="Email" onChange={e=>setNewUser({...newUser,email:e.target.value})}/>
+         <input style={input} placeholder="CEP"value={tempPatient.cep}onChange={e=>{const cep = e.target.value.replace(/\D/g,"");setTempPatient({...tempPatient,cep});buscarCEP(cep, setTempPatient);}}/>
+          <input style={input} placeholder="Rua"/>
+           <input style={input} placeholder="Número"/>
+            <input style={input} placeholder="Complemento"/>
+             <input style={input} placeholder="Bairro"/>
+              <input style={input} placeholder="Cidade"/>
+               <input style={input} placeholder="Estado"/>
+         <div style={{ display: "flex", alignItems: "center", border: "1px solid #ccc", borderRadius: 8, marginBottom: 14, background: "#fff" }} >
+           <input style={{ ...input, border: "none", marginBottom: 0, flex: 1 }} type={showRegisterPassword ? "text" : "password"}placeholder="Senha"onChange={e =>setNewUser({ ...newUser, password: e.target.value })}/>
+            <span onClick={() => setShowPassword(!showPassword)} style={{ cursor: "pointer", padding: "0 12px", fontSize: 18, color: "#666" }} > {showPassword ? <FiEyeOff /> : <FiEye />} </span> 
+            </div>
+             <button style={primaryBtn} onClick={handleRegister}>Salvar</button>
+              </div>
+               </div> 
+               );
   if (screen === "menu") return layout(
   <>
     <h1>Bem-vindo(a), {currentUser?.name}</h1>
@@ -268,23 +322,33 @@ export default function App() {
       </Card>
     </>
   );
-
-  if (screen === "novoPaciente") return layout(
-    <>
-      <VoltarMenu setScreen={setScreen} />
-      <Card title="Novo Paciente">
-        <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({name:e.target.value})}/>
-        <button style={primaryBtn} onClick={addPatient}>Salvar</button>
-      </Card>
-    </>
-  );
-
+  if (screen === "novoPaciente") return layout( 
+  <>
+   <VolarMennu setScreen={setScreen} />
+    <Card title="Novo Paciente">
+       <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({...tempPatient,name:e.target.value})}/>
+        <input style={input} placeholder="Email" value={tempPatient.email} onChange={e=>setTempPatient({...tempPatient,email:e.target.value})}/>
+         <input style={input} placeholder="Telefone" value={tempPatient.phone} onChange={e=>setTempPatient({...tempPatient,phone:e.target.value})}/>
+          <input type="date" style={input} value={tempPatient.birthDate} onChange={e=>setTempPatient({...tempPatient,birthDate:e.target.value})}/>
+           <input style ={input} placeholder="CEP"/>
+            <input style ={input} placeholder="Rua"/>
+             <input style ={input} placeholder="Número"/>
+              <input style ={input} placeholder="Complemento"/>
+               <input style ={input} placeholder="Bairro"/>
+                <input style ={input} placeholder="Cidade"/>
+                 <input style ={input} placeholder="Estado"/>
+            <textarea style={input} placeholder="Observações" value={tempPatient.notes} onChange={e=>setTempPatient({...tempPatient,notes:e.target.value})}/>
+               <button style={primaryBtn} onClick={addPatient}>Salvar</button>
+                </Card>
+                 </>
+                  );
   if (screen === "agenda") return layout(
     <>
       <VoltarMenu setScreen={setScreen} />
       <Card title="Agenda">
+        <input type="date"style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
         <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>+ Novo Agendamento</button>
-        {myAppointments.map(a=>(
+        {filteredAppointments.map(a =>(
           <div key={a.id}>
             <b>{a.patientName}</b> — {a.date} {a.time}
             <button onClick={()=>{
@@ -307,7 +371,7 @@ export default function App() {
             <option key={p.id} value={p.id}>{p.name}</option>
           ))}
         </select>
-        <input type="date" style={input} onChange={e=>setScheduleDate(e.target.value)} />
+        <input type="date"style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
         <input type="time" style={input} onChange={e=>setScheduleTime(e.target.value)} />
         <button style={primaryBtn} onClick={saveAppointment}>Salvar</button>
       </Card>
@@ -337,6 +401,8 @@ export default function App() {
       </>
     );
   }
+  if (screen == "resetSenha"){
 
+  }
   return null;
 }
