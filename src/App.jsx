@@ -327,7 +327,7 @@ export default function App() {
     </div>
   );
 
-  if (screen === "Menu Principal") return layout(
+  if (screen === "menu") return layout(
     <>
       <h1>Bem-vindo(a), {currentUser?.name}</h1>
 
