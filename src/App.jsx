@@ -274,8 +274,7 @@ export default function App() {
   );
 
   return null;
-}
-if (screen === "menu") return layout(
+  if (screen === "menu") return layout(
   <>
     <h1>Bem-vindo(a), {currentUser?.name}</h1>
 
@@ -541,4 +540,5 @@ if (screen === "prontuario") {
       </Card>
     </>
   );
+}
 }
