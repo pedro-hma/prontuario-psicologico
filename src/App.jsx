@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { FiEye, FiEyeOff } from "react-icons/fi";
 /* ===================== ESTILO ===================== */
 const colors = {
   bg: "#f2f5f4",
@@ -146,6 +146,7 @@ export default function App() {
   const [scheduleTime, setScheduleTime] = useState("");
   const [editingAppointment, setEditingAppointment] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   /* ---------- persistência ---------- */
   useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
@@ -270,17 +271,17 @@ export default function App() {
     placeholder="Senha"
     onChange={e => setLoginPass(e.target.value)}
   />
-  <span onClick={() => setShowPassword(!showPassword)} style={{
-      cursor: "pointer",
-      padding: "0 12px",
-      fontSize: 18,
-      userSelect: "none"
-    }}
-  >
-    {showPassword ? "🙈" : "👁️"}
-  </span>
+  <span onClick={() => setShowPassword(!showPassword)}
+  style={{
+    cursor: "pointer",
+    padding: "0 12px",
+    fontSize: 18,
+    color: "#666"
+  }}
+>
+  {showPassword ? <FiEyeOff /> : <FiEye />}
+</span>
 </div>
-
         <button style={{...primaryBtn,width:"100%"}} onClick={handleLogin}>Entrar</button>
         <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("register")}>Cadastrar</button>
       </div>
@@ -293,7 +294,33 @@ export default function App() {
         <h2>Novo Usuário</h2>
         <input style={input} placeholder="Nome" onChange={e=>setNewUser({...newUser,name:e.target.value})}/>
         <input style={input} placeholder="Email" onChange={e=>setNewUser({...newUser,email:e.target.value})}/>
-        <input style={input} placeholder="Senha" onChange={e=>setNewUser({...newUser,password:e.target.value})}/>
+        <div style={{
+    display: "flex",
+    alignItems: "center",
+    border: "1px solid #ccc",
+    borderRadius: 8,
+    marginBottom: 14,
+    background: "#fff"
+  }}
+>
+  <input style={{
+      ...input,
+      border: "none",
+      marginBottom: 0,
+      flex: 1
+    }}
+    type={showRegisterPassword ? "text" : "password"}placeholder="Senha"onChange={e =>setNewUser({ ...newUser, password: e.target.value })}/>
+  <span onClick={() => setShowPassword(!showPassword)}
+  style={{
+    cursor: "pointer",
+    padding: "0 12px",
+    fontSize: 18,
+    color: "#666"
+  }}
+>
+  {showPassword ? <FiEyeOff /> : <FiEye />}
+</span>
+</div>
         <button style={primaryBtn} onClick={handleRegister}>Salvar</button>
       </div>
     </div>
