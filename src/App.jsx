@@ -270,16 +270,8 @@ export default function App() {
   if (screen === "register") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
       <div style={{ position: "relative" }}>
-  <input
-    style={{ ...input, paddingRight: 40 }}
-    type={showPassword ? "text" : "password"}
-    placeholder="Senha"
-    onChange={e => setLoginPass(e.target.value)}
-  />
-
-  <span
-    onClick={() => setShowPassword(!showPassword)}
-    style={{
+  <input style={{ ...input, paddingRight: 40 }}type={showPassword ? "text" : "password"}placeholder="Senha" onChange={e => setLoginPass(e.target.value)}/>
+  <span onClick={() => setShowPassword(!showPassword)} style={{
       position: "absolute",
       right: 12,
       top: "50%",
@@ -288,15 +280,12 @@ export default function App() {
       fontSize: 18,
       color: colors.subtext
     }}
-    title={showPassword ? "Ocultar senha" : "Mostrar senha"}
-  >
+    title={showPassword ? "Ocultar senha" : "Mostrar senha"}>
     {showPassword ? "🙈" : "👁️"}
   </span>
 </div>
-
       </div>
   );
-
   if (screen === "dashboard") return layout(
     <>
       <h1>Bem-vindo(a), {currentUser?.name}</h1>
