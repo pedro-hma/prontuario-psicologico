@@ -41,10 +41,10 @@ const ghostBtn = {
 };
 
 /* ===================== HELPERS ===================== */
-function BackToDashboard({ setScreen }) {
+function VoltaraoMenuPrincipal({ setScreen }) {
   return (
-    <button style={{ ...ghostBtn, marginBottom: 16 }} onClick={() => setScreen("dashboard")}>
-      ← Voltar ao Dashboard
+    <button style={{ ...ghostBtn, marginBottom: 16 }} onClick={() => setScreen("menu")}>
+      ← Voltar ao Menu
     </button>
   );
 }
@@ -90,7 +90,7 @@ function Sidebar({ current, setScreen }) {
   return (
     <div style={{ width: 220, background: "#fff", borderRight: `1px solid ${colors.border}`, padding: 16 }}>
       <h3>Prontuário</h3>
-      <Item id="dashboard" label="Dashboard" />
+      <Item id="menu" label="Menu" />
       <Item id="pacientes" label="Pacientes" />
       <Item id="agenda" label="Agenda" />
     </div>
@@ -144,7 +144,7 @@ export default function App() {
   const [schedulePatient, setSchedulePatient] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
-  const [editingAppointment, setEditingAppointment] = useState(null);
+  const [setTempAppointment, setEditingAppointment] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
@@ -169,7 +169,7 @@ export default function App() {
     const u = users.find(x => x.email === loginEmail && x.password === loginPass);
     if (!u) return alert("Login inválido");
     setCurrentUser(u);
-    setScreen("dashboard");
+    setScreen("menu");
   }
 
   function handleRegister() {
@@ -288,6 +288,7 @@ export default function App() {
     </div>
   );
   console.log("SCREEN ATUAL :",screen)
+
   if (screen === "register") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
@@ -326,7 +327,7 @@ export default function App() {
     </div>
   );
 
-  if (screen === "dashboard") return layout(
+  if (screen === "Menu Principal") return layout(
     <>
       <h1>Bem-vindo(a), {currentUser?.name}</h1>
 
@@ -349,26 +350,36 @@ export default function App() {
 
   if (screen === "pacientes") return layout(
     <>
-      <BackToDashboard setScreen={setScreen} />
+      <VoltaraoMenuPrincipal setScreen={setScreen} />
       <Card title="Pacientes">
-        <input style={input} placeholder="Buscar" onChange={e=>setSearch(e.target.value)} />
-        {myPatients.filter(p=>p.name.toLowerCase().includes(search.toLowerCase())).map(p=>(
-          <div key={p.id} style={{borderTop:`1px solid ${colors.border}`,padding:12}}>
-            <b>{p.name}</b> • {calcAge(p.birthDate)} anos
-            <div style={{marginTop:8}}>
-              <button style={primaryBtn} onClick={()=>{setCurrentPatient(p);setScreen("novoAtendimento");}}>Atender</button>
-              <button style={ghostBtn} onClick={()=>{setCurrentPatient(p);setScreen("prontuario");}}>Prontuário</button>
-              <button style={ghostBtn} onClick={()=>{setEditingPatient(p);setTempPatient(p);setScreen("novoPaciente");}}>Editar</button>
-            </div>
-          </div>
-        ))}
-      </Card>
+  <input style={input} placeholder="Buscar" onChange={e => setSearch(e.target.value)}/>
+  <button style={{ ...primaryBtn, marginBottom: 12 }}onClick={() => {setEditingPatient(null);setTempPatient({ name: "", birthDate: "" });setScreen("novoPaciente");}}>
+    + Novo paciente
+  </button>
+
+  {myPatients.filter(p =>p.name.toLowerCase().includes(search.toLowerCase()))
+    .map(p => (
+      <div key={p.id} style={{ borderTop: `1px solid ${colors.border}`, padding: 12 }}>
+        <b>{p.name}</b> • {calcAge(p.birthDate)} anos
+        <div style={{ marginTop: 8 }}>
+          <button style={primaryBtn}onClick={() => {setCurrentPatient(p);setScreen("novoAtendimento");}}>
+            Atender
+          </button>
+          <button style={ghostBtn}onClick={() => {setCurrentPatient(p); setScreen("prontuario");}}>
+            Prontuário
+          </button>
+          <button style={ghostBtn}onClick={() => {setEditingPatient(p);setTempPatient(p);setScreen("novoPaciente");}}>
+            Editar
+          </button>
+        </div>
+      </div>
+    ))}
+</Card>
     </>
   );
-
   if (screen === "novoPaciente") return layout(
     <>
-      <BackToDashboard setScreen={setScreen} />
+      <VoltaraoMenuPrincipal setScreen={setScreen} />
       <Card title="Novo Paciente">
         <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({...tempPatient,name:e.target.value})}/>
         <input style={input} placeholder="Email" value={tempPatient.email} onChange={e=>setTempPatient({...tempPatient,email:e.target.value})}/>
@@ -383,41 +394,68 @@ export default function App() {
 
   if (screen === "novoAtendimento") return layout(
     <>
-      <BackToDashboard setScreen={setScreen} />
+      <VoltaraoMenuPrincipal setScreen={setScreen} />
       <Card title="Novo Atendimento">
         <textarea style={{...input,height:140}} value={note} onChange={e=>setNote(e.target.value)} />
         <button style={primaryBtn} onClick={saveSession}>Salvar Atendimento</button>
       </Card>
     </>
   );
-
   if (screen === "agenda") return layout(
-    <>
-      <BackToDashboard setScreen={setScreen} />
-      <Card title="Agenda">
-        {myAppointments.map(a=>(
-          <div key={a.id} style={{borderTop:`1px solid ${colors.border}`,padding:12}}>
-            <b>{a.patientName}</b> — {a.date} {a.time}<br/>
-            <span style={{color:statusColor(a.status),fontWeight:600}}>{a.status}</span>
-            {a.status==="agendada" && (
-              <div>
-                <button style={primaryBtn} onClick={()=>startAppointment(a)}>Iniciar</button>
-                <button style={ghostBtn} onClick={()=>cancelAppointment(a.id)}>Cancelar</button>
-              </div>
-            )}
+  <>
+    <VoltaraoMenuPrincipal setScreen={setScreen} />
+    <Card title="Agenda">
+      {/* Buscar */}
+      <input style={input}placeholder="Buscar por paciente"onChange={e => setSearch(e.target.value)}/>
+      {/* Novo agendamento */}
+      <button style={{ ...primaryBtn, marginBottom: 12 }}onClick={() => {setEditingAppointment(null);setTempAppointment({patient: null,
+            date: "",
+            time: "",
+            notes: ""
+          });
+          setScreen("novoAgendamento");
+        }}
+      >
+        + Novo agendamento
+      </button>
+      {/* Lista */}
+      {appointments .filter(a =>a.patient?.name.toLowerCase().includes(search.toLowerCase()))
+        .map(a => (
+          <div
+            key={a.id}
+            style={{
+              borderTop: `1px solid ${colors.border}`,
+              padding: 12
+            }}
+          >
+            <b>{a.patient?.name}</b><br />
+            {a.date} • {a.time}
+            <div style={{ marginTop: 8 }}>
+              <button style={primaryBtn}onClick={() => {setCurrentAppointment(a);setScreen("atendimento");}}>
+                Atender
+              </button>
+              <button style={ghostBtn}onClick={() => {setEditingAppointment(a);setTempAppointment(a);setScreen("novoAgendamento");}}>
+                Editar
+              </button>
+            </div>
           </div>
         ))}
-      </Card>
-    </>
-  );
-
+      {/* Estado vazio */}
+      {appointments.length === 0 && (
+        <div style={{ opacity: 0.6, marginTop: 12 }}>
+          Nenhum agendamento cadastrado.
+        </div>
+      )}
+    </Card>
+  </>
+);
   if (screen === "prontuario") {
     const key = recordKey(currentUser.id, currentPatient.id);
     const list = records[key] || [];
 
     return layout(
       <>
-        <BackToDashboard setScreen={setScreen} />
+        <VoltaraoMenuPrincipal setScreen={setScreen} />
         <Card title={`Prontuário • ${currentPatient.name}`}>
           {list.map((r,i)=>(
             <div key={i} style={{borderTop:`1px solid ${colors.border}`,padding:12}}>
