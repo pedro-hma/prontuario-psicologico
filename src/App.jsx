@@ -41,7 +41,7 @@ const ghostBtn = {
 };
 
 /* ===================== HELPERS ===================== */
-function VoltaraoMenuPrincipal({ setScreen }) {
+function VolarMennu({ setScreen }) {
   return (
     <button style={{ ...ghostBtn, marginBottom: 16 }} onClick={() => setScreen("menu")}>
       ← Voltar ao Menu
@@ -350,7 +350,7 @@ export default function App() {
 
   if (screen === "pacientes") return layout(
     <>
-      <VoltaraoMenuPrincipal setScreen={setScreen} />
+      <VolarMennu setScreen={setScreen} />
       <Card title="Pacientes">
   <input style={input} placeholder="Buscar" onChange={e => setSearch(e.target.value)}/>
   <button style={{ ...primaryBtn, marginBottom: 12 }}onClick={() => {setEditingPatient(null);setTempPatient({ name: "", birthDate: "" });setScreen("novoPaciente");}}>
@@ -379,7 +379,7 @@ export default function App() {
   );
   if (screen === "novoPaciente") return layout(
     <>
-      <VoltaraoMenuPrincipal setScreen={setScreen} />
+      <VolarMennu setScreen={setScreen} />
       <Card title="Novo Paciente">
         <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({...tempPatient,name:e.target.value})}/>
         <input style={input} placeholder="Email" value={tempPatient.email} onChange={e=>setTempPatient({...tempPatient,email:e.target.value})}/>
@@ -394,7 +394,7 @@ export default function App() {
 
   if (screen === "novoAtendimento") return layout(
     <>
-      <VoltaraoMenuPrincipal setScreen={setScreen} />
+      <VolarMennu setScreen={setScreen} />
       <Card title="Novo Atendimento">
         <textarea style={{...input,height:140}} value={note} onChange={e=>setNote(e.target.value)} />
         <button style={primaryBtn} onClick={saveSession}>Salvar Atendimento</button>
@@ -403,7 +403,7 @@ export default function App() {
   );
   if (screen === "agenda") return layout(
   <>
-    <VoltaraoMenuPrincipal setScreen={setScreen} />
+    <VolarMennu setScreen={setScreen} />
     <Card title="Agenda">
       {/* Buscar */}
       <input style={input}placeholder="Buscar por paciente"onChange={e => setSearch(e.target.value)}/>
@@ -455,7 +455,7 @@ export default function App() {
 
     return layout(
       <>
-        <VoltaraoMenuPrincipal setScreen={setScreen} />
+        <VolarMennu setScreen={setScreen} />
         <Card title={`Prontuário • ${currentPatient.name}`}>
           {list.map((r,i)=>(
             <div key={i} style={{borderTop:`1px solid ${colors.border}`,padding:12}}>
