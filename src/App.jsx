@@ -231,7 +231,7 @@ export default function App() {
   function startAppointment(a) {
     setAppointments(appointments.map(x => x.id === a.id ? { ...x, status: "realizada" } : x));
     setCurrentPatient(myPatients.find(p => p.id === a.patientId));
-    setScreen("novoAtendimento");
+    setScreen("novoAgendamento");
   }
 
   function cancelAppointment(id) {
@@ -343,7 +343,7 @@ export default function App() {
       </div>
 
       <Card title="Ações rápidas">
-        <button style={primaryBtn} onClick={()=>setScreen("novoAtendimento")}>Realizar Atendimento</button>
+        <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>Realizar Atendimento</button>
       </Card>
     </>
   );
@@ -362,7 +362,7 @@ export default function App() {
       <div key={p.id} style={{ borderTop: `1px solid ${colors.border}`, padding: 12 }}>
         <b>{p.name}</b> • {calcAge(p.birthDate)} anos
         <div style={{ marginTop: 8 }}>
-          <button style={primaryBtn}onClick={() => {setCurrentPatient(p);setScreen("novoAtendimento");}}>
+          <button style={primaryBtn}onClick={() => {setCurrentPatient(p);setScreen("novoAgendamento");}}>
             Atender
           </button>
           <button style={ghostBtn}onClick={() => {setCurrentPatient(p); setScreen("prontuario");}}>
@@ -464,7 +464,7 @@ export default function App() {
             </div>
           ))}
 
-          <button style={primaryBtn} onClick={()=>setScreen("novoAtendimento")}>
+          <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>
             Novo Atendimento
           </button>
 
