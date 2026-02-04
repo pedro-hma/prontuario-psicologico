@@ -275,3 +275,270 @@ export default function App() {
 
   return null;
 }
+if (screen === "menu") return layout(
+  <>
+    <h1>Bem-vindo(a), {currentUser?.name}</h1>
+
+    {/* Cards de resumo */}
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: 16,
+        marginBottom: 20
+      }}
+    >
+      <Card>
+        <div style={{ color: colors.subtext }}>Meus Pacientes</div>
+        <div style={{ fontSize: 36, fontWeight: 700 }}>
+          {myPatients.length}
+        </div>
+      </Card>
+
+      <Card>
+        <div style={{ color: colors.subtext }}>Consultas Hoje</div>
+        <div style={{ fontSize: 36, fontWeight: 700 }}>
+          {
+            myAppointments.filter(
+              a => a.date === new Date().toISOString().split("T")[0]
+            ).length
+          }
+        </div>
+      </Card>
+    </div>
+
+    {/* Ações rápidas */}
+    <Card title="Ações rápidas">
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <button
+          style={primaryBtn}
+          onClick={() => setScreen("novoAtendimento")}
+        >
+          Novo Atendimento
+        </button>
+
+        <button
+          style={ghostBtn}
+          onClick={() => setScreen("novoPaciente")}
+        >
+          Novo Paciente
+        </button>
+
+        <button
+          style={ghostBtn}
+          onClick={() => setScreen("novoAgendamento")}
+        >
+          Novo Agendamento
+        </button>
+      </div>
+    </Card>
+  </>
+);
+
+if (screen === "pacientes") return layout(
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title="Pacientes">
+      <input
+        style={input}
+        placeholder="Buscar"
+        onChange={e => setSearch(e.target.value)}
+      />
+
+      <button
+        style={primaryBtn}
+        onClick={() => setScreen("novoPaciente")}
+      >
+        + Novo paciente
+      </button>
+
+      {myPatients
+        .filter(p =>
+          p.name.toLowerCase().includes(search.toLowerCase())
+        )
+        .map(p => (
+          <div key={p.id}>
+            <b>{p.name}</b>
+            <button
+              onClick={() => {
+                setCurrentPatient(p);
+                setScreen("novoAtendimento");
+              }}
+            >
+              Atender
+            </button>
+          </div>
+        ))}
+    </Card>
+  </>
+);
+
+if (screen === "novoPaciente") return layout(
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title="Novo Paciente">
+      <input
+        style={input}
+        placeholder="Nome"
+        value={tempPatient.name}
+        onChange={e =>
+          setTempPatient({ ...tempPatient, name: e.target.value })
+        }
+      />
+
+      <input
+        style={input}
+        placeholder="Email"
+        value={tempPatient.email}
+        onChange={e =>
+          setTempPatient({ ...tempPatient, email: e.target.value })
+        }
+      />
+
+      <input
+        style={input}
+        placeholder="Telefone"
+        value={tempPatient.phone}
+        onChange={e =>
+          setTempPatient({ ...tempPatient, phone: e.target.value })
+        }
+      />
+
+      <input
+        type="date"
+        style={input}
+        value={tempPatient.birthDate}
+        onChange={e =>
+          setTempPatient({ ...tempPatient, birthDate: e.target.value })
+        }
+      />
+
+      <input style={input} placeholder="CEP" />
+      <input style={input} placeholder="Rua" />
+      <input style={input} placeholder="Número" />
+      <input style={input} placeholder="Complemento" />
+      <input style={input} placeholder="Bairro" />
+      <input style={input} placeholder="Cidade" />
+      <input style={input} placeholder="Estado" />
+
+      <textarea
+        style={input}
+        placeholder="Observações"
+        value={tempPatient.notes}
+        onChange={e =>
+          setTempPatient({ ...tempPatient, notes: e.target.value })
+        }
+      />
+
+      <button style={primaryBtn} onClick={addPatient}>
+        Salvar
+      </button>
+    </Card>
+  </>
+);
+
+if (screen === "agenda") return layout(
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title="Agenda">
+      <input
+        type="date"
+        style={input}
+        value={scheduleDate}
+        onChange={e => setScheduleDate(e.target.value)}
+      />
+
+      <button
+        style={primaryBtn}
+        onClick={() => setScreen("novoAgendamento")}
+      >
+        + Novo Agendamento
+      </button>
+
+      {filteredAppointments.map(a => (
+        <div key={a.id}>
+          <b>{a.patientName}</b> — {a.date} {a.time}
+          <button
+            onClick={() => {
+              setCurrentPatient(
+                myPatients.find(p => p.id === a.patientId)
+              );
+              setScreen("novoAtendimento");
+            }}
+          >
+            Atender
+          </button>
+        </div>
+      ))}
+    </Card>
+  </>
+);
+
+if (screen === "novoAgendamento") return layout(
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title="Novo Agendamento">
+      <select
+        style={input}
+        onChange={e => setSchedulePatient(e.target.value)}
+      >
+        <option value="">Paciente</option>
+        {myPatients.map(p => (
+          <option key={p.id} value={p.id}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+
+      <input
+        type="date"
+        style={input}
+        value={scheduleDate}
+        onChange={e => setScheduleDate(e.target.value)}
+      />
+
+      <input
+        type="time"
+        style={input}
+        onChange={e => setScheduleTime(e.target.value)}
+      />
+
+      <button style={primaryBtn} onClick={saveAppointment}>
+        Salvar
+      </button>
+    </Card>
+  </>
+);
+
+if (screen === "novoAtendimento") return layout(
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title={`Novo Atendimento • ${currentPatient?.name}`}>
+      <textarea
+        style={{ ...input, height: 140 }}
+        value={note}
+        onChange={e => setNote(e.target.value)}
+      />
+      <button style={primaryBtn} onClick={saveSession}>
+        Salvar Atendimento
+      </button>
+    </Card>
+  </>
+);
+
+if (screen === "prontuario") {
+  const key = recordKey(currentUser.id, currentPatient.id);
+  return layout(
+    <>
+      <VoltarMenu setScreen={setScreen} />
+      <Card title={`Prontuário • ${currentPatient.name}`}>
+        {(records[key] || []).map((r, i) => (
+          <div key={i}>
+            <small>{r.date}</small>
+            <p>{r.text}</p>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
+}
