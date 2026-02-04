@@ -145,6 +145,7 @@ export default function App() {
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
   const [editingAppointment, setEditingAppointment] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   /* ---------- persistência ---------- */
   useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
@@ -247,26 +248,53 @@ export default function App() {
 
   if (screen === "login") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
-      <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
-        <h2>Login</h2>
-        <input style={input} placeholder="Email" onChange={e=>setLoginEmail(e.target.value)} />
-        <input style={input} type="password" placeholder="Senha" onChange={e=>setLoginPass(e.target.value)} />
-        <button style={{...primaryBtn,width:"100%"}} onClick={handleLogin}>Entrar</button>
-        <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("register")}>Cadastrar</button>
-      </div>
+      <div style={{ position: "relative" }}>
+      <input tyle={{ ...input, paddingRight: 40 }} type={showPassword ? "text" : "password"} placeholder="Senha"onChange={e => setLoginPass(e.target.value)}/>
+  <span onClick={() => setShowPassword(!showPassword)}style={{
+      position: "absolute",
+      right: 12,
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+      fontSize: 18,
+      color: colors.subtext
+    }}
+    title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+  >
+    {showPassword ? "🙈" : "👁️"}
+  </span>
+</div>
     </div>
   );
 
   if (screen === "register") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
-      <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
-        <h2>Novo Usuário</h2>
-        <input style={input} placeholder="Nome" onChange={e=>setNewUser({...newUser,name:e.target.value})}/>
-        <input style={input} placeholder="Email" onChange={e=>setNewUser({...newUser,email:e.target.value})}/>
-        <input style={input} placeholder="Senha" onChange={e=>setNewUser({...newUser,password:e.target.value})}/>
-        <button style={primaryBtn} onClick={handleRegister}>Salvar</button>
+      <div style={{ position: "relative" }}>
+  <input
+    style={{ ...input, paddingRight: 40 }}
+    type={showPassword ? "text" : "password"}
+    placeholder="Senha"
+    onChange={e => setLoginPass(e.target.value)}
+  />
+
+  <span
+    onClick={() => setShowPassword(!showPassword)}
+    style={{
+      position: "absolute",
+      right: 12,
+      top: "50%",
+      transform: "translateY(-50%)",
+      cursor: "pointer",
+      fontSize: 18,
+      color: colors.subtext
+    }}
+    title={showPassword ? "Ocultar senha" : "Mostrar senha"}
+  >
+    {showPassword ? "🙈" : "👁️"}
+  </span>
+</div>
+
       </div>
-    </div>
   );
 
   if (screen === "dashboard") return layout(
