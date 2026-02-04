@@ -251,13 +251,42 @@ export default function App() {
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
         <h2>Login</h2>
         <input style={input} placeholder="Email" onChange={e=>setLoginEmail(e.target.value)} />
-        <input style={input} type="password" placeholder="Senha" onChange={e=>setLoginPass(e.target.value)} />
+        <div style={{
+    display: "flex",
+    alignItems: "center",
+    border: "1px solid #ccc",
+    borderRadius: 8,
+    marginBottom: 14,
+    background: "#fff"
+  }}
+>
+  <input style={{
+      ...input,
+      border: "none",
+      marginBottom: 0,
+      flex: 1
+    }}
+    type={showPassword ? "text" : "password"}
+    placeholder="Senha"
+    onChange={e => setLoginPass(e.target.value)}
+  />
+  <span onClick={() => setShowPassword(!showPassword)} style={{
+      cursor: "pointer",
+      padding: "0 12px",
+      fontSize: 18,
+      userSelect: "none"
+    }}
+  >
+    {showPassword ? "🙈" : "👁️"}
+  </span>
+</div>
+
         <button style={{...primaryBtn,width:"100%"}} onClick={handleLogin}>Entrar</button>
         <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("register")}>Cadastrar</button>
       </div>
     </div>
   );
-  console.log("SCREEN ATUAL :",senha)
+  console.log("SCREEN ATUAL :",screen)
   if (screen === "register") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
