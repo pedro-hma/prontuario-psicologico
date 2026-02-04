@@ -392,7 +392,7 @@ export default function App() {
     </>
   );
 
-  if (screen === "novoAtendimento") return layout(
+  if (screen === "novoAgendamento") return layout(
     <>
       <VolarMennu setScreen={setScreen} />
       <Card title="Novo Atendimento">
