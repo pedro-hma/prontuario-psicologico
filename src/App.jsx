@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+
 /* ===================== ESTILO ===================== */
 const colors = {
   bg: "#f2f5f4",
-  sidebar: "#ffffff",
   primary: "#1aa39a",
   border: "#e2e8e7",
   text: "#243333",
   subtext: "#6b7c7c",
   danger: "#c0392b",
-  success: "#27ae60",
-  info: "#2980b9"
 };
 
 const input = {
@@ -41,25 +39,12 @@ const ghostBtn = {
 };
 
 /* ===================== HELPERS ===================== */
-function VolarMennu({ setScreen }) {
+function VoltarMenu({ setScreen }) {
   return (
     <button style={{ ...ghostBtn, marginBottom: 16 }} onClick={() => setScreen("menu")}>
       ← Voltar ao Menu
     </button>
   );
-}
-
-function calcAge(birthDate) {
-  if (!birthDate) return "-";
-  const diff = Date.now() - new Date(birthDate).getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
-}
-
-function statusColor(status) {
-  if (status === "agendada") return colors.info;
-  if (status === "realizada") return colors.success;
-  if (status === "cancelada") return colors.danger;
-  return colors.subtext;
 }
 
 function recordKey(professionalId, patientId) {
@@ -73,14 +58,14 @@ function Sidebar({ current, setScreen }) {
       onClick={() => setScreen(id)}
       style={{
         width: "100%",
-        textAlign: "left",
         padding: 12,
         borderRadius: 10,
         border: "none",
         cursor: "pointer",
         background: current === id ? colors.primary : "transparent",
         color: current === id ? "#fff" : colors.text,
-        marginBottom: 6
+        marginBottom: 6,
+        textAlign: "left"
       }}
     >
       {label}
@@ -97,15 +82,10 @@ function Sidebar({ current, setScreen }) {
   );
 }
 
-function Card({ title, children, right }) {
+function Card({ title, children }) {
   return (
-    <div style={{ background: "#fff", borderRadius: 14, border: `1px solid ${colors.border}`, padding: 20, marginBottom: 18 }}>
-      {(title || right) && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
-          <h2 style={{ margin: 0 }}>{title}</h2>
-          {right}
-        </div>
-      )}
+    <div style={{ background: "#fff", borderRadius: 14, border: `1px solid ${colors.border}`, padding: 20 }}>
+      {title && <h2>{title}</h2>}
       {children}
     </div>
   );
@@ -123,48 +103,27 @@ export default function App() {
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPass, setLoginPass] = useState("");
-  const [newUser, setNewUser] = useState({ name: "", email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
   const [search, setSearch] = useState("");
   const [currentPatient, setCurrentPatient] = useState(null);
   const [note, setNote] = useState("");
-  const [confirmClear, setConfirmClear] = useState(false);
 
-  const [tempPatient, setTempPatient] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    birthDate: "",
-    address: "",
-    notes: ""
-  });
-
+  const [tempPatient, setTempPatient] = useState({ name: "" });
   const [editingPatient, setEditingPatient] = useState(null);
 
   const [schedulePatient, setSchedulePatient] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
-  const [setTempAppointment, setEditingAppointment] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
-  /* ---------- persistência ---------- */
+  const myPatients = patients.filter(p => p.professionalId === currentUser?.id);
+  const myAppointments = appointments.filter(a => a.professionalId === currentUser?.id);
+
   useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
   useEffect(() => localStorage.setItem("patients", JSON.stringify(patients)), [patients]);
   useEffect(() => localStorage.setItem("appointments", JSON.stringify(appointments)), [appointments]);
   useEffect(() => localStorage.setItem("records", JSON.stringify(records)), [records]);
-  useEffect(() => setConfirmClear(false), [screen]);
 
-  /* ---------- controle por profissional ---------- */
-  const myPatients = patients.filter(p => p.professionalId === currentUser?.id);
-  const myAppointments = appointments.filter(a => a.professionalId === currentUser?.id);
-
-  const today = new Date().toISOString().split("T")[0];
-  const todaysAppointments = myAppointments.filter(
-    a => a.date === today && a.status === "agendada"
-  );
-
-  /* ---------- auth ---------- */
   function handleLogin() {
     const u = users.find(x => x.email === loginEmail && x.password === loginPass);
     if (!u) return alert("Login inválido");
@@ -172,70 +131,41 @@ export default function App() {
     setScreen("menu");
   }
 
-  function handleRegister() {
-    setUsers([...users, { id: Date.now(), ...newUser }]);
-    setNewUser({ name: "", email: "", password: "" });
-    setScreen("login");
-  }
-
-  /* ---------- pacientes ---------- */
   function addPatient() {
     if (!tempPatient.name) return;
-
     if (editingPatient) {
-      setPatients(patients.map(p => p.id === editingPatient.id ? { ...p, ...tempPatient } : p));
+      setPatients(patients.map(p => p.id === editingPatient.id ? tempPatient : p));
     } else {
       setPatients([...patients, { id: Date.now(), professionalId: currentUser.id, ...tempPatient }]);
     }
-
     setEditingPatient(null);
-    setTempPatient({ name: "", email: "", phone: "", birthDate: "", address: "", notes: "" });
+    setTempPatient({ name: "" });
     setScreen("pacientes");
   }
 
-  /* ---------- atendimento ---------- */
-  function saveSession() {
-    if (!currentPatient || !note) return alert("Selecione o paciente e escreva a anotação.");
-
-    const key = recordKey(currentUser.id, currentPatient.id);
-    const entry = { date: new Date().toLocaleString("pt-BR"), text: note };
-
-    setRecords(prev => ({ ...prev, [key]: [...(prev[key] || []), entry] }));
-    setNote("");
-    setScreen("prontuario");
-  }
-
-  /* ---------- agenda ---------- */
   function saveAppointment() {
-    if (!schedulePatient || !scheduleDate || !scheduleTime) return alert("Preencha tudo.");
-
-    if (editingAppointment) {
-      setAppointments(appointments.map(a => a.id === editingAppointment.id ? { ...a, date: scheduleDate, time: scheduleTime } : a));
-    } else {
-      const p = myPatients.find(p => p.id === Number(schedulePatient));
-      setAppointments([...appointments, {
-        id: Date.now(),
-        professionalId: currentUser.id,
-        patientId: p.id,
-        patientName: p.name,
-        date: scheduleDate,
-        time: scheduleTime,
-        status: "agendada"
-      }]);
-    }
-
-    setEditingAppointment(null);
+    if (!schedulePatient || !scheduleDate || !scheduleTime) return;
+    const p = myPatients.find(p => p.id === Number(schedulePatient));
+    setAppointments([...appointments, {
+      id: Date.now(),
+      professionalId: currentUser.id,
+      patientId: p.id,
+      patientName: p.name,
+      date: scheduleDate,
+      time: scheduleTime
+    }]);
     setScreen("agenda");
   }
 
-  function startAppointment(a) {
-    setAppointments(appointments.map(x => x.id === a.id ? { ...x, status: "realizada" } : x));
-    setCurrentPatient(myPatients.find(p => p.id === a.patientId));
-    setScreen("novoAgendamento");
-  }
-
-  function cancelAppointment(id) {
-    setAppointments(appointments.map(a => a.id === id ? { ...a, status: "cancelada" } : a));
+  function saveSession() {
+    if (!note || !currentPatient) return;
+    const key = recordKey(currentUser.id, currentPatient.id);
+    setRecords(prev => ({
+      ...prev,
+      [key]: [...(prev[key] || []), { date: new Date().toLocaleString(), text: note }]
+    }));
+    setNote("");
+    setScreen("prontuario");
   }
 
   const layout = content => (
@@ -252,244 +182,157 @@ export default function App() {
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
         <h2>Login</h2>
         <input style={input} placeholder="Email" onChange={e=>setLoginEmail(e.target.value)} />
-        <div style={{
-    display: "flex",
-    alignItems: "center",
-    border: "1px solid #ccc",
-    borderRadius: 8,
-    marginBottom: 14,
-    background: "#fff"
-  }}
->
-  <input style={{
-      ...input,
-      border: "none",
-      marginBottom: 0,
-      flex: 1
-    }}
-    type={showPassword ? "text" : "password"}
-    placeholder="Senha"
-    onChange={e => setLoginPass(e.target.value)}
-  />
-  <span onClick={() => setShowPassword(!showPassword)}
-  style={{
-    cursor: "pointer",
-    padding: "0 12px",
-    fontSize: 18,
-    color: "#666"
-  }}
->
-  {showPassword ? <FiEyeOff /> : <FiEye />}
-</span>
-</div>
+        <div style={{display:"flex",alignItems:"center",border:`1px solid ${colors.border}`,borderRadius:10}}>
+          <input
+            style={{...input,border:"none",marginBottom:0}}
+            type={showPassword ? "text" : "password"}
+            placeholder="Senha"
+            onChange={e=>setLoginPass(e.target.value)}
+          />
+          <span onClick={()=>setShowPassword(!showPassword)} style={{padding:10,cursor:"pointer"}}>
+            {showPassword ? <FiEyeOff /> : <FiEye />}
+          </span>
+        </div>
         <button style={{...primaryBtn,width:"100%"}} onClick={handleLogin}>Entrar</button>
         <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("register")}>Cadastrar</button>
+        <button style={{ ...ghostBtn, width: "100%", marginTop: 8 }}nClick={() => setScreen("resetSenha")}>Esqueci minha senha</button>
       </div>
     </div>
   );
-  console.log("SCREEN ATUAL :",screen)
-
-  if (screen === "register") return (
-    <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
-      <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
-        <h2>Novo Usuário</h2>
-        <input style={input} placeholder="Nome" onChange={e=>setNewUser({...newUser,name:e.target.value})}/>
-        <input style={input} placeholder="Email" onChange={e=>setNewUser({...newUser,email:e.target.value})}/>
-        <div style={{
-    display: "flex",
-    alignItems: "center",
-    border: "1px solid #ccc",
-    borderRadius: 8,
-    marginBottom: 14,
-    background: "#fff"
-  }}
->
-  <input style={{
-      ...input,
-      border: "none",
-      marginBottom: 0,
-      flex: 1
-    }}
-    type={showRegisterPassword ? "text" : "password"}placeholder="Senha"onChange={e =>setNewUser({ ...newUser, password: e.target.value })}/>
-  <span onClick={() => setShowPassword(!showPassword)}
-  style={{
-    cursor: "pointer",
-    padding: "0 12px",
-    fontSize: 18,
-    color: "#666"
-  }}
->
-  {showPassword ? <FiEyeOff /> : <FiEye />}
-</span>
-</div>
-        <button style={primaryBtn} onClick={handleRegister}>Salvar</button>
-      </div>
-    </div>
-  );
-
   if (screen === "menu") return layout(
-    <>
-      <h1>Bem-vindo(a), {currentUser?.name}</h1>
+  <>
+    <h1>Bem-vindo(a), {currentUser?.name}</h1>
+    {/* Cards de resumo */}
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+      <Card>
+        <div style={{ color: colors.subtext }}>Meus Pacientes</div>
+        <div style={{ fontSize: 36, fontWeight: 700 }}>
+          {myPatients.length}
+        </div>
+      </Card>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
-        <Card>
-          <div style={{color:colors.subtext}}>Meus Pacientes</div>
-          <div style={{fontSize:36,fontWeight:700}}>{myPatients.length}</div>
-        </Card>
-        <Card>
-          <div style={{color:colors.subtext}}>Consultas Hoje</div>
-          <div style={{fontSize:36,fontWeight:700}}>{todaysAppointments.length}</div>
-        </Card>
+      <Card>
+        <div style={{ color: colors.subtext }}>Consultas Hoje</div>
+        <div style={{ fontSize: 36, fontWeight: 700 }}>
+          {
+            myAppointments.filter(
+              a =>
+                a.date === new Date().toISOString().split("T")[0]
+            ).length
+          }
+        </div>
+      </Card>
+    </div>
+
+    {/* Ações rápidas */}
+    <Card title="Ações rápidas">
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <button
+          style={primaryBtn}
+          onClick={() => setScreen("novoAtendimento")}
+        >
+          Novo Atendimento
+        </button>
+
+        <button
+          style={ghostBtn}
+          onClick={() => setScreen("novoPaciente")}
+        >
+          Novo Paciente
+        </button>
+
+        <button
+          style={ghostBtn}
+          onClick={() => setScreen("novoAgendamento")}
+        >
+          Novo Agendamento
+        </button>
       </div>
-
-      <Card title="Ações rápidas">
-        <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>Realizar Atendimento</button>
+    </Card>
+  </>
+);
+  if (screen === "pacientes") return layout(
+    <>
+      <VoltarMenu setScreen={setScreen} />
+      <Card title="Pacientes">
+        <input style={input} placeholder="Buscar" onChange={e=>setSearch(e.target.value)} />
+        <button style={primaryBtn} onClick={()=>setScreen("novoPaciente")}>+ Novo paciente</button>
+        {myPatients
+          .filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+          .map(p => (
+            <div key={p.id}>
+              <b>{p.name}</b>
+              <button onClick={()=>{setCurrentPatient(p);setScreen("novoAtendimento")}}>Atender</button>
+            </div>
+          ))}
       </Card>
     </>
   );
 
-  if (screen === "pacientes") return layout(
-    <>
-      <VolarMennu setScreen={setScreen} />
-      <Card title="Pacientes">
-  <input style={input} placeholder="Buscar" onChange={e => setSearch(e.target.value)}/>
-  <button style={{ ...primaryBtn, marginBottom: 12 }}onClick={() => {setEditingPatient(null);setTempPatient({ name: "", birthDate: "" });setScreen("novoPaciente");}}>
-    + Novo paciente
-  </button>
-
-  {myPatients.filter(p =>p.name.toLowerCase().includes(search.toLowerCase()))
-    .map(p => (
-      <div key={p.id} style={{ borderTop: `1px solid ${colors.border}`, padding: 12 }}>
-        <b>{p.name}</b> • {calcAge(p.birthDate)} anos
-        <div style={{ marginTop: 8 }}>
-          <button style={primaryBtn}onClick={() => {setCurrentPatient(p);setScreen("novoAgendamento");}}>
-            Atender
-          </button>
-          <button style={ghostBtn}onClick={() => {setCurrentPatient(p); setScreen("prontuario");}}>
-            Prontuário
-          </button>
-          <button style={ghostBtn}onClick={() => {setEditingPatient(p);setTempPatient(p);setScreen("novoPaciente");}}>
-            Editar
-          </button>
-        </div>
-      </div>
-    ))}
-</Card>
-    </>
-  );
   if (screen === "novoPaciente") return layout(
     <>
-      <VolarMennu setScreen={setScreen} />
+      <VoltarMenu setScreen={setScreen} />
       <Card title="Novo Paciente">
-        <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({...tempPatient,name:e.target.value})}/>
-        <input style={input} placeholder="Email" value={tempPatient.email} onChange={e=>setTempPatient({...tempPatient,email:e.target.value})}/>
-        <input style={input} placeholder="Telefone" value={tempPatient.phone} onChange={e=>setTempPatient({...tempPatient,phone:e.target.value})}/>
-        <input type="date" style={input} value={tempPatient.birthDate} onChange={e=>setTempPatient({...tempPatient,birthDate:e.target.value})}/>
-        <textarea style={input} placeholder="Endereço" value={tempPatient.address} onChange={e=>setTempPatient({...tempPatient,address:e.target.value})}/>
-        <textarea style={input} placeholder="Observações" value={tempPatient.notes} onChange={e=>setTempPatient({...tempPatient,notes:e.target.value})}/>
+        <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({name:e.target.value})}/>
         <button style={primaryBtn} onClick={addPatient}>Salvar</button>
+      </Card>
+    </>
+  );
+
+  if (screen === "agenda") return layout(
+    <>
+      <VoltarMenu setScreen={setScreen} />
+      <Card title="Agenda">
+        <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>+ Novo Agendamento</button>
+        {myAppointments.map(a=>(
+          <div key={a.id}>
+            <b>{a.patientName}</b> — {a.date} {a.time}
+            <button onClick={()=>{
+              setCurrentPatient(myPatients.find(p=>p.id===a.patientId));
+              setScreen("novoAtendimento");
+            }}>Atender</button>
+          </div>
+        ))}
       </Card>
     </>
   );
 
   if (screen === "novoAgendamento") return layout(
     <>
-      <VolarMennu setScreen={setScreen} />
-      <Card title="Novo Atendimento">
+      <VoltarMenu setScreen={setScreen} />
+      <Card title="Novo Agendamento">
+        <select style={input} onChange={e=>setSchedulePatient(e.target.value)}>
+          <option value="">Paciente</option>
+          {myPatients.map(p=>(
+            <option key={p.id} value={p.id}>{p.name}</option>
+          ))}
+        </select>
+        <input type="date" style={input} onChange={e=>setScheduleDate(e.target.value)} />
+        <input type="time" style={input} onChange={e=>setScheduleTime(e.target.value)} />
+        <button style={primaryBtn} onClick={saveAppointment}>Salvar</button>
+      </Card>
+    </>
+  );
+
+  if (screen === "novoAtendimento") return layout(
+    <>
+      <VoltarMenu setScreen={setScreen} />
+      <Card title={`Novo Atendimento • ${currentPatient?.name}`}>
         <textarea style={{...input,height:140}} value={note} onChange={e=>setNote(e.target.value)} />
         <button style={primaryBtn} onClick={saveSession}>Salvar Atendimento</button>
       </Card>
     </>
   );
-  if (screen === "agenda") return layout(
-  <>
-    <VolarMennu setScreen={setScreen} />
-    <Card title="Agenda">
-      {/* Buscar */}
-      <input style={input}placeholder="Buscar por paciente"onChange={e => setSearch(e.target.value)}/>
-      {/* Novo agendamento */}
-      <button style={{ ...primaryBtn, marginBottom: 12 }}onClick={() => {setEditingAppointment(null);setTempAppointment({patient: null,
-            date: "",
-            time: "",
-            notes: ""
-          });
-          setScreen("novoAgendamento");
-        }}
-      >
-        + Novo agendamento
-      </button>
-      {/* Lista */}
-      {appointments .filter(a =>a.patient?.name.toLowerCase().includes(search.toLowerCase()))
-        .map(a => (
-          <div
-            key={a.id}
-            style={{
-              borderTop: `1px solid ${colors.border}`,
-              padding: 12
-            }}
-          >
-            <b>{a.patient?.name}</b><br />
-            {a.date} • {a.time}
-            <div style={{ marginTop: 8 }}>
-              <button style={primaryBtn}onClick={() => {setCurrentAppointment(a);setScreen("atendimento");}}>
-                Atender
-              </button>
-              <button style={ghostBtn}onClick={() => {setEditingAppointment(a);setTempAppointment(a);setScreen("novoAgendamento");}}>
-                Editar
-              </button>
-            </div>
-          </div>
-        ))}
-      {/* Estado vazio */}
-      {appointments.length === 0 && (
-        <div style={{ opacity: 0.6, marginTop: 12 }}>
-          Nenhum agendamento cadastrado.
-        </div>
-      )}
-    </Card>
-  </>
-);
+
   if (screen === "prontuario") {
     const key = recordKey(currentUser.id, currentPatient.id);
-    const list = records[key] || [];
-
     return layout(
       <>
-        <VolarMennu setScreen={setScreen} />
+        <VoltarMenu setScreen={setScreen} />
         <Card title={`Prontuário • ${currentPatient.name}`}>
-          {list.map((r,i)=>(
-            <div key={i} style={{borderTop:`1px solid ${colors.border}`,padding:12}}>
-              <small>{r.date}</small>
-              <p>{r.text}</p>
-            </div>
+          {(records[key]||[]).map((r,i)=>(
+            <div key={i}><small>{r.date}</small><p>{r.text}</p></div>
           ))}
-
-          <button style={primaryBtn} onClick={()=>setScreen("novoAgendamento")}>
-            Novo Atendimento
-          </button>
-
-          {!confirmClear && (
-            <button style={{...ghostBtn,color:colors.danger,marginLeft:8}} onClick={()=>setConfirmClear(true)}>
-              Limpar prontuário
-            </button>
-          )}
-
-          {confirmClear && (
-            <div style={{marginTop:12}}>
-              <p style={{color:colors.danger}}>Tem certeza? Essa ação não pode ser desfeita.</p>
-              <button style={{...primaryBtn,background:colors.danger}} onClick={()=>{
-                setRecords(prev=>{
-                  const copy={...prev};
-                  delete copy[key];
-                  return copy;
-                });
-                setConfirmClear(false);
-              }}>
-                Sim, apagar tudo
-              </button>
-              <button style={ghostBtn} onClick={()=>setConfirmClear(false)}>Cancelar</button>
-            </div>
-          )}
         </Card>
       </>
     );
