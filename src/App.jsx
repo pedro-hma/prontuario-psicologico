@@ -125,9 +125,6 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [currentPatient, setCurrentPatient] = useState(null);
   const [note, setNote] = useState("");
-
-  const [tempPatient, setTempPatient] = useState({ name: "" });
-
   const [schedulePatient, setSchedulePatient] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
@@ -145,7 +142,20 @@ export default function App() {
     city: "",
     state: ""
   });
-
+  const [tempPatient, setTempPatient] = useState({
+  name: "",
+  email: "",
+  phone: "",
+  birthDate: "",
+  age: "",
+  cep: "",
+  address: "",
+  number: "",
+  neighborhood: "",
+  city: "",
+  state: "",
+  notes: ""
+});
   const myPatients = patients.filter(p => p.professionalId === currentUser?.id);
   const myAppointments = appointments.filter(a => a.professionalId === currentUser?.id);
   const filteredAppointments = myAppointments.filter(a => !filterDate || a.date === filterDate);
@@ -154,14 +164,12 @@ export default function App() {
   useEffect(() => localStorage.setItem("patients", JSON.stringify(patients)), [patients]);
   useEffect(() => localStorage.setItem("appointments", JSON.stringify(appointments)), [appointments]);
   useEffect(() => localStorage.setItem("records", JSON.stringify(records)), [records]);
-
   function handleLogin() {
     const u = users.find(x => x.email === loginEmail && x.password === loginPass);
     if (!u) return alert("Login inválido");
     setCurrentUser(u);
     setScreen("menu");
   }
-
   function handleRegister() {
     const { name, email, password, cep, address, number } = newUser;
     if (!name || !email || !password || !cep || !address || !number) {
@@ -169,15 +177,27 @@ export default function App() {
     }
     setUsers([...users, { id: Date.now(), ...newUser }]);
     setScreen("login");
+    if (Object.values(newUser).some(v => !v)) {
+  return alert("Preencha todos os campos");
+}
   }
-
   function addPatient() {
-    if (!tempPatient.name) return;
-    setPatients([...patients, { id: Date.now(), professionalId: currentUser.id, ...tempPatient }]);
-    setTempPatient({ name: "" });
-    setScreen("pacientes");
-  }
+  const {
+    name, email, phone, birthDate,
+    cep, address, number, city, state
+  } = tempPatient;
 
+  if (!name || !email || !phone || !birthDate ||
+      !cep || !address || !number || !city || !state) {
+    return alert("Preencha todos os campos obrigatórios");
+  }
+  setPatients([
+    ...patients,
+    { id: Date.now(), professionalId: currentUser.id, ...tempPatient }
+  ]);
+  setTempPatient({ name: "" });
+  setScreen("pacientes");
+}
   function saveAppointment() {
     const p = myPatients.find(p => p.id === Number(schedulePatient));
     if (!p) return;
@@ -202,16 +222,27 @@ export default function App() {
     setNote("");
     setScreen("prontuario");
   }
-
+  function calcularIdade(data) {
+  if (!data) return "";
+  const hoje = new Date();
+  const nasc = new Date(data);
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  return idade;
+}
+function formatarDataBR(dataISO) {
+  if (!dataISO) return "";
+  const [ano, mes, dia] = dataISO.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
   const layout = content => (
     <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
       <Sidebar current={screen} setScreen={setScreen} />
       <div style={{ flex: 1, padding: 28 }}>{content}</div>
     </div>
   );
-
   /* ===================== TELAS ===================== */
-
   if (screen === "login") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
@@ -234,7 +265,6 @@ export default function App() {
       </div>
     </div>
   );
-
   if (screen === "register") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
@@ -270,7 +300,6 @@ export default function App() {
       </div>
     </div>
   );
-
   if (screen === "resetSenha") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
       <div style={{background:"#fff",padding:30,borderRadius:14,width:360}}>
@@ -293,16 +322,52 @@ export default function App() {
       </div>
     </div>
   );
-
   if (screen === "menu") return layout(
-    <>
-      <h1>Bem-vindo(a), {currentUser?.name}</h1>
-      <Card title="Ações rápidas">
-        <button style={primaryBtn} onClick={()=>setScreen("pacientes")}>Pacientes</button>
-      </Card>
-    </>
-  );
+  <>
+    <h1>Bem-vindo(a), {currentUser?.name}</h1>
 
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 16,
+      marginBottom: 20
+    }}>
+      <Card>
+        <div style={{ color: colors.subtext }}>Meus Pacientes</div>
+        <div style={{ fontSize: 36, fontWeight: 700 }}>
+          {myPatients.length}
+        </div>
+      </Card>
+
+      <Card>
+        <div style={{ color: colors.subtext }}>Consultas Hoje</div>
+        <div style={{ fontSize: 36, fontWeight: 700 }}>
+          {
+            myAppointments.filter(
+              a => a.date === new Date().toISOString().split("T")[0]
+            ).length
+          }
+        </div>
+      </Card>
+    </div>
+
+    <Card title="Ações rápidas">
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+        <button style={primaryBtn} onClick={()=>setScreen("novoAtendimento")}>
+          Novo Atendimento
+        </button>
+
+        <button style={ghostBtn} onClick={()=>setScreen("novoPaciente")}>
+          Novo Paciente
+        </button>
+
+        <button style={ghostBtn} onClick={()=>setScreen("novoAgendamento")}>
+          Novo Agendamento
+        </button>
+      </div>
+    </Card>
+  </>
+);
   if (screen === "pacientes") return layout(
     <>
       <VoltarMenu setScreen={setScreen} />
@@ -317,19 +382,22 @@ export default function App() {
       </Card>
     </>
   );
-
   if (screen === "novoPaciente") return layout(
     <>
       <VoltarMenu setScreen={setScreen} />
       <Card title="Novo Paciente">
         <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({name:e.target.value})}/>
+        <input style={input}placeholder="CEP"value={tempPatient.cep}onChange={e=>{const cep = e.target.value.replace(/\D/g,"");setTempPatient(prev=>({...prev, cep}));buscarCEP(cep, setTempPatient);}}/>
+        <input type="date" style={input}value={tempPatient.birthDate}onChange={e=>{const data = e.target.value;setTempPatient({...tempPatient,birthDate: data,age: calcularIdade(data)});}}/>
+        <input style={input} placeholder="Idade"value={tempPatient.age}disabled/>
         <button style={primaryBtn} onClick={addPatient}>Salvar</button>
       </Card>
     </>
-  );
-
+  );x
   if (screen === "agenda") return layout(
     <>
+    <input type="date"style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
+    {formatarDataBR(a.date)} às {a.time}
       <VoltarMenu setScreen={setScreen} />
       <Card title="Agenda">
         {filteredAppointments.map(a => (
@@ -338,7 +406,6 @@ export default function App() {
       </Card>
     </>
   );
-
   if (screen === "novoAgendamento") return layout(
     <>
       <VoltarMenu setScreen={setScreen} />
@@ -347,7 +414,6 @@ export default function App() {
       </Card>
     </>
   );
-
   if (screen === "novoAtendimento") return layout(
     <>
       <VoltarMenu setScreen={setScreen} />
@@ -357,7 +423,6 @@ export default function App() {
       </Card>
     </>
   );
-
   if (screen === "prontuario") {
     const key = recordKey(currentUser.id, currentPatient.id);
     return layout(
