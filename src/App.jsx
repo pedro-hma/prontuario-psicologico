@@ -197,19 +197,27 @@ export default function App() {
   setTempPatient({ name: "" });
   setScreen("pacientes");
 }
-  function saveAppointment() {
-    const p = myPatients.find(p => p.id === Number(schedulePatient));
-    if (!p) return;
-    setAppointments([...appointments, {
+function saveAppointment() {
+  if (!schedulePatient || !scheduleDate || !scheduleTime) {
+    return alert("Preencha todos os campos");
+  }
+  const p = myPatients.find(p => p.id === Number(schedulePatient));
+  setAppointments([
+    ...appointments,
+    {
       id: Date.now(),
       professionalId: currentUser.id,
       patientId: p.id,
       patientName: p.name,
       date: scheduleDate,
       time: scheduleTime
-    }]);
-    setScreen("agenda");
-  }
+    }
+  ]);
+  setSchedulePatient("");
+  setScheduleDate("");
+  setScheduleTime("");
+  setScreen("agenda");
+}
   function saveSession() {
     if (!currentPatient || !note) return;
     const key = recordKey(currentUser.id, currentPatient.id);
@@ -389,34 +397,48 @@ function formatarDataBR(dataISO) {
     </>
   );x
   if (screen === "agenda") return layout(
-    <>
-    <input type="date"style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
-    {formatarDataBR(a.date)} às {a.time}
-      <VoltarMenu setScreen={setScreen} />
-      <Card title="Agenda">
-        {filteredAppointments.map(a => (
-          <div key={a.id}>{a.patientName} — {a.date} {a.time}</div>
-        ))}
-      </Card>
-    </>
-  );
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <input type="date"style={input}value={filterDate}onChange={e => setFilterDate(e.target.value)}/>
+    <button style={primaryBtn}onClick={() => setScreen("novoAgendamento")}>+ Novo Agendamento</button>
+    <Card title="Agenda">
+      {filteredAppointments.map(a => (
+        <div key={a.id} style={{ marginBottom: 12 }}>
+          <b>{a.patientName}</b> — {formatarDataBR(a.date)} às {a.time}
+          <div style={{ marginTop: 6 }}>
+            <button onClick={() => {setCurrentPatient(myPatients.find(p => p.id === a.patientId));setScreen("novoAtendimento");}}>Atender</button>
+          </div>
+        </div>
+      ))}
+    </Card>
+  </>
+);
   if (screen === "novoAgendamento") return layout(
-    <>
-      <VoltarMenu setScreen={setScreen} />
-      <Card title="Novo Agendamento">
-        <button style={primaryBtn} onClick={saveAppointment}>Salvar</button>
-      </Card>
-    </>
-  );
-  if (screen === "novoAtendimento") return layout(
-    <>
-      <VoltarMenu setScreen={setScreen} />
-      <Card title={`Novo Atendimento • ${currentPatient?.name}`}>
-        <textarea style={input} value={note} onChange={e=>setNote(e.target.value)} />
-        <button style={primaryBtn} onClick={saveSession}>Salvar</button>
-      </Card>
-    </>
-  );
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title="Novo Agendamento">
+      <select style={input}value={schedulePatient}onChange={e => setSchedulePatient(e.target.value)}>
+        <option value="">Selecione o paciente</option>
+        {myPatients.map(p => (<option key={p.id} value={p.id}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+      <input type="date"style={input}value={scheduleDate}onChange={e => setScheduleDate(e.target.value)}/>
+      <input type="time"style={input}value={scheduleTime}onChange={e => setScheduleTime(e.target.value)}/>
+      <button style={primaryBtn}onClick={saveAppointment}>Salvar Agendamento</button>
+    </Card>
+  </>
+);
+if (screen === "novoAtendimento") return layout(
+  <>
+    <VoltarMenu setScreen={setScreen} />
+    <Card title={`Novo Atendimento • ${currentPatient?.name || ""}`}>
+      <textarea style={{ ...input, height: 150 }}placeholder="Descreva o atendimento..." value={note}onChange={e => setNote(e.target.value)}/>
+      <button style={primaryBtn}onClick={saveSession}> Salvar Atendimento</button>
+    </Card>
+  </>
+);
   if (screen === "prontuario") {
     const key = recordKey(currentUser.id, currentPatient.id);
     return layout(
