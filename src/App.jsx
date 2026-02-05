@@ -201,7 +201,20 @@ function saveAppointment() {
   if (!schedulePatient || !scheduleDate || !scheduleTime) {
     return alert("Preencha todos os campos");
   }
+
+  // 🔴 VERIFICA CHOQUE
+  const conflito = appointments.find(a =>
+    a.professionalId === currentUser.id &&
+    a.date === scheduleDate &&
+    a.time === scheduleTime
+  );
+
+  if (conflito) {
+    return alert("Já existe uma consulta marcada nesse dia e horário");
+  }
+
   const p = myPatients.find(p => p.id === Number(schedulePatient));
+
   setAppointments([
     ...appointments,
     {
@@ -213,9 +226,11 @@ function saveAppointment() {
       time: scheduleTime
     }
   ]);
+
   setSchedulePatient("");
   setScheduleDate("");
   setScheduleTime("");
+
   setScreen("agenda");
 }
   function saveSession() {
