@@ -170,6 +170,7 @@ export default function App() {
   });
   ffect(() => localStorage.setItem("users", JSONuseE.stringify(users)), [users]);
  useEffect(() => {
+  setScreen("login")
   const savedUsers = JSON.parse(localStorage.getItem("users") || "[]");
   if (savedUsers.length === 0) {
     const adminPadrao = [{
