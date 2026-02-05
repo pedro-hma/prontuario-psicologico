@@ -148,9 +148,13 @@ export default function App() {
   phone: "",
   birthDate: "",
   age: "",
+  father: "",
+  mother: "",
+  school: "",
   cep: "",
   address: "",
   number: "",
+  complement: "",
   neighborhood: "",
   city: "",
   state: "",
@@ -188,15 +192,26 @@ export default function App() {
   setUsers([...users, { id: Date.now(), ...newUser }]);
   setScreen("login");
 }
-  function addPatient() {
-  const {
-    name, email, phone, birthDate,
-    cep, address, number, city, state
-  } = tempPatient;
-  setPatients([
-    ...patients,
-    { id: Date.now(), professionalId: currentUser.id, ...tempPatient }
-  ]);
+function addPatient() {
+  if (!tempPatient.name) return alert("Preencha o nome");
+
+  if (tempPatient.id) {
+    // EDITANDO
+    setPatients(patients.map(p =>
+      p.id === tempPatient.id ? tempPatient : p
+    ));
+  } else {
+    // NOVO
+    setPatients([
+      ...patients,
+      {
+        id: Date.now(),
+        professionalId: currentUser.id,
+        ...tempPatient
+      }
+    ]);
+  }
+
   setTempPatient({ name: "" });
   setScreen("pacientes");
 }
@@ -386,13 +401,14 @@ function formatarDataBR(dataISO) {
       <VoltarMenu setScreen={setScreen} />
       <Card title="Pacientes">
         {myPatients.map(p => (
-  <div key={p.id} style={{ marginBottom: 10 }}>
-    <b>{p.name}</b>
-    <div style={{ marginTop: 5, display: "flex", gap: 8 }}>
-      <button onClick={() => {setCurrentPatient(p);setScreen("novoAtendimento");}}>Atender</button>
-      <button style={ghostBtn}onClick={() => {setCurrentPatient(p);setScreen("prontuario");}}>Historico</button>
-    </div>
+          <div key={p.id} style={{ marginBottom: 12 }}>
+            <b>{p.name}</b>
+  <div style={{ display: "flex", gap: 8, marginTop: 5 }}>
+    <button onClick={()=>{setCurrentPatient(p);setScreen("novoAtendimento");}}>Atender</button>
+    <button onClick={()=>{setCurrentPatient(p); setScreen("prontuario");}}>Prontuário</button>
+    <button style={ghostBtn}onClick={()=>{setTempPatient(p);setScreen("novoPaciente");}}>Cadastro</button>
   </div>
+</div>
 ))}
         <button style={primaryBtn} onClick={()=>setScreen("novoPaciente")}>+ Novo</button>
       </Card>
@@ -402,6 +418,7 @@ function formatarDataBR(dataISO) {
     <>
       <VoltarMenu setScreen={setScreen} />
       <Card title="Novo Paciente">
+        <button style={ghostBtn} onClick={()=>setScreen("pacientes")}>← Voltar</button>
         <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({name:e.target.value})}/>
         <input style={input}placeholder="CEP"value={tempPatient.cep}onChange={e=>{
           const cep = e.target.value.replace(/\D/g,"");setTempPatient(prev=>({...prev, cep}));buscarCEP(cep, setTempPatient);}}/>
@@ -413,24 +430,52 @@ function formatarDataBR(dataISO) {
           <input style={input}placeholder="Complemento"onChange={e=>setTempPatient({...tempPatient, complement:e.target.value})}/>
         <input type="date" style={input}value={tempPatient.birthDate}onChange={e=>{const data = e.target.value;setTempPatient({...tempPatient,birthDate: data,age: calcularIdade(data)});}}/>
         <input style={input} placeholder="Idade"value={tempPatient.age}disabled/>
+        <input style={input} placeholder="Nome da mãe" value={tempPatient.mother}onChange={e=>setTempPatient({...tempPatient, mother:e.target.value})}/>
+        <input style={input} placeholder="Nome do pai"value={tempPatient.father}onChange={e=>setTempPatient({...tempPatient, father:e.target.value})}/>
+<input style={input} placeholder="Telefone" value={tempPatient.phone}onChange={e=>setTempPatient({...tempPatient, phone:e.target.value})}/>
+<input style={input} placeholder="Escola" value={tempPatient.school}onChange={e=>setTempPatient({...tempPatient, school:e.target.value})}/>
         <button style={primaryBtn} onClick={addPatient}>Salvar</button>
       </Card>
     </>
-  );
+  )
   if (screen === "agenda") return layout(
   <>
-    <VoltarMenu setScreen={setScreen} />
+    <button style={ghostBtn} onClick={()=>setScreen("menu")}>
+      ← Voltar
+    </button>
     <input type="date"style={input}value={filterDate}onChange={e => setFilterDate(e.target.value)}/>
     <button style={primaryBtn}onClick={() => setScreen("novoAgendamento")}>+ Novo Agendamento</button>
     <Card title="Agenda">
-      {filteredAppointments.map(a => (
-        <div key={a.id} style={{ marginBottom: 12 }}>
-          <b>{a.patientName}</b> — {formatarDataBR(a.date)} às {a.time}
-          <div style={{ marginTop: 6 }}>
-            <button onClick={() => {setCurrentPatient(myPatients.find(p => p.id === a.patientId));setScreen("novoAtendimento");}}>Atender</button>
+      {filteredAppointments
+        .sort((a, b) => {
+          const d1 = new Date(`${a.date}T${a.time}`);
+          const d2 = new Date(`${b.date}T${b.time}`);
+          return d1 - d2;
+        })
+        .map(a => (
+          <div
+            key={a.id}
+            style={{
+              marginBottom: 12,
+              padding: 10,
+              borderRadius: 8,
+              background:
+                a.status === "cancelado" ? "#fdecea" :
+                a.status === "realizado" ? "#e8f5e9" :
+                "#fff3cd"
+            }}
+          >
+            <b>{a.patientName}</b><br/>
+            {formatarDataBR(a.date)} às {a.time}<br/>
+            <small>Status: {a.status || "marcado"}</small>
+            <div style={{ marginTop: 8, display:"flex", gap:8 }}>
+              <button onClick={() => {setCurrentPatient(myPatients.find(p => p.id === a.patientId));setScreen("novoAtendimento");}}>Atender</button> 
+              <button style={{ background:"#c0392b", color:"#fff", border:"none", padding:6, borderRadius:6 }}onClick={()=>{setAppointments(appointments.map(ap =>
+                   ap.id === a.id ? { ...ap, status:"cancelado" }: ap));}}> Cancelar
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
     </Card>
   </>
 );
@@ -438,6 +483,7 @@ function formatarDataBR(dataISO) {
   <>
     <VoltarMenu setScreen={setScreen} />
     <Card title="Novo Agendamento">
+      <button style={ghostBtn} onClick={()=>setScreen("agenda")}>← Voltar</button>
       <select style={input}value={schedulePatient}onChange={e => setSchedulePatient(e.target.value)}>
         <option value="">Selecione o paciente</option>
         {myPatients.map(p => (<option key={p.id} value={p.id}>
@@ -466,6 +512,16 @@ if (screen === "novoAtendimento") return layout(
       <>
         <VoltarMenu setScreen={setScreen} />
         <Card title="Prontuário">
+          <button style={{ ...ghostBtn, color:"#c0392b", marginTop:10 }}onClick={()=>{
+    if (!window.confirm("Tem certeza que deseja apagar TODO o prontuário?")) return;
+    if (!window.confirm("Isso não poderá ser desfeito. Confirmar novamente?")) return;
+    const key = recordKey(currentUser.id, currentPatient.id);
+    setRecords(prev => {
+      const copy = {...prev};
+      delete copy[key];
+      return copy;
+    });
+  }}> Limpar prontuário</button>
           {(records[key] || []).map((r,i)=>(
             <div key={i}><small>{r.date}</small><p>{r.text}</p></div>
           ))}
