@@ -222,11 +222,11 @@ function saveAppointment() {
 
   // 🔴 VERIFICA CHOQUE
   const conflito = appointments.find(a =>
-    a.professionalId === currentUser.id &&
-    a.date === scheduleDate &&
-    a.time === scheduleTime
-  );
-
+  a.professionalId === currentUser.id &&
+  a.date === scheduleDate &&
+  a.time === scheduleTime &&
+  a.status !== "cancelado"
+);
   if (conflito) {
     return alert("Já existe uma consulta marcada nesse dia e horário");
   }
@@ -366,19 +366,15 @@ function formatarDataBR(dataISO) {
           {myPatients.length}
         </div>
       </Card>
-
-      <Card>
-        <div style={{ color: colors.subtext }}>Consultas Hoje</div>
-        <div style={{ fontSize: 36, fontWeight: 700 }}>
-          {
-            myAppointments.filter(
-              a => a.date === new Date().toISOString().split("T")[0]
-            ).length
-          }
-        </div>
-      </Card>
+      <div style={{ fontSize: 36, fontWeight: 700, cursor:"pointer" }}onClick={()=>setScreen("consultasHoje")}>
+  {
+    myAppointments.filter(
+      a => a.date === new Date().toISOString().split("T")[0]
+      && a.status !== "cancelado"
+    ).length
+  }
+</div>
     </div>
-
     <Card title="Ações rápidas">
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
         <button style={primaryBtn} onClick={()=>setScreen("novoAtendimento")}>
@@ -422,6 +418,7 @@ function formatarDataBR(dataISO) {
         <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({name:e.target.value})}/>
         <input style={input}placeholder="CEP"value={tempPatient.cep}onChange={e=>{
           const cep = e.target.value.replace(/\D/g,"");setTempPatient(prev=>({...prev, cep}));buscarCEP(cep, setTempPatient);}}/>
+        <input style={input} placeholder="Forma  de Pagemento" value={tempPatient.mother}onChange={e=>setTempPatient({...tempPatient, pagamento:e.target.value})}/>
           <input style={input} placeholder="Rua" value={tempPatient.address} readOnly />
           <input style={input} placeholder="Bairro" value={tempPatient.neighborhood} readOnly />
           <input style={input} placeholder="Cidade" value={tempPatient.city} readOnly />
@@ -432,8 +429,8 @@ function formatarDataBR(dataISO) {
         <input style={input} placeholder="Idade"value={tempPatient.age}disabled/>
         <input style={input} placeholder="Nome da mãe" value={tempPatient.mother}onChange={e=>setTempPatient({...tempPatient, mother:e.target.value})}/>
         <input style={input} placeholder="Nome do pai"value={tempPatient.father}onChange={e=>setTempPatient({...tempPatient, father:e.target.value})}/>
-<input style={input} placeholder="Telefone" value={tempPatient.phone}onChange={e=>setTempPatient({...tempPatient, phone:e.target.value})}/>
-<input style={input} placeholder="Escola" value={tempPatient.school}onChange={e=>setTempPatient({...tempPatient, school:e.target.value})}/>
+        <input style={input} placeholder="Telefone" value={tempPatient.phone}onChange={e=>setTempPatient({...tempPatient, phone:e.target.value})}/>
+        <input style={input} placeholder="Escola" value={tempPatient.school}onChange={e=>setTempPatient({...tempPatient, school:e.target.value})}/>
         <button style={primaryBtn} onClick={addPatient}>Salvar</button>
       </Card>
     </>
@@ -529,6 +526,37 @@ if (screen === "novoAtendimento") return layout(
       </>
     );
   }
+  if (screen === "consultasHoje") {
+  const hoje = new Date().toISOString().split("T")[0];
+  const consultasHoje = myAppointments
+    .filter(a => a.date === hoje && a.status !== "cancelado")
+    .sort((a,b)=>{
+      const d1 = new Date(`${a.date}T${a.time}`);
+      const d2 = new Date(`${b.date}T${b.time}`);
+      return d1 - d2;
+    });
+  return layout(
+    <>
+      <button style={ghostBtn} onClick={()=>setScreen("menu")}>
+        ← Voltar
+      </button>
+      <Card title="Consultas de Hoje">
+        {consultasHoje.map(a => (
+  <div key={a.id} style={{ marginBottom:12 }}>
+    <b>{a.patientName}</b><br/>
+    {a.time}
 
+    <div style={{ marginTop:5 }}>
+      <button onClick={()=>{setCurrentPatient(myPatients.find(p => p.id === a.patientId));setScreen("novoAtendimento"); }}
+      >
+        Atender
+      </button>
+    </div>
+  </div>
+))}
+      </Card>
+    </>
+  );
+}
   return null;
 }
