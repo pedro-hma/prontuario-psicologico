@@ -395,7 +395,7 @@ function formatarDataBR(dataISO) {
         <button style={primaryBtn} onClick={addPatient}>Salvar</button>
       </Card>
     </>
-  );x
+  );
   if (screen === "agenda") return layout(
   <>
     <VoltarMenu setScreen={setScreen} />
