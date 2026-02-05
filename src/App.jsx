@@ -182,10 +182,6 @@ export default function App() {
     city,
     state
   } = newUser;
-
-  if (!name ||!email ||!password ||!cep ||!address ||!number ||!neighborhood ||!city ||!state) {
-    return alert("Preencha todos os campos obrigatórios");
-  }
   setUsers([...users, { id: Date.now(), ...newUser }]);
   setScreen("login");
 }
@@ -194,10 +190,6 @@ export default function App() {
     name, email, phone, birthDate,
     cep, address, number, city, state
   } = tempPatient;
-
-  if (!name || !email || !phone || !birthDate || !cep || !address || !number || !city || !state) {
-    return alert("Preencha todos os campos obrigatórios");
-  }
   setPatients([
     ...patients,
     { id: Date.now(), professionalId: currentUser.id, ...tempPatient }
