@@ -158,7 +158,10 @@ export default function App() {
 });
   const myPatients = patients.filter(p => p.professionalId === currentUser?.id);
   const myAppointments = appointments.filter(a => a.professionalId === currentUser?.id);
-  const filteredAppointments = myAppointments.filter(a => !filterDate || a.date === filterDate);
+  const filteredAppointments = myAppointments .filter(a => !filterDate || a.date === filterDate).sort((a, b) => {const dataA = new Date(`${a.date}T${a.time}`);
+    const dataB = new Date(`${b.date}T${b.time}`);
+    return dataA - dataB;
+  });
 
   useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
   useEffect(() => localStorage.setItem("patients", JSON.stringify(patients)), [patients]);
