@@ -386,11 +386,14 @@ function formatarDataBR(dataISO) {
       <VoltarMenu setScreen={setScreen} />
       <Card title="Pacientes">
         {myPatients.map(p => (
-          <div key={p.id}>
-            <b>{p.name}</b>
-            <button onClick={()=>{setCurrentPatient(p);setScreen("novoAtendimento");}}>Atender</button>
-          </div>
-        ))}
+  <div key={p.id} style={{ marginBottom: 10 }}>
+    <b>{p.name}</b>
+    <div style={{ marginTop: 5, display: "flex", gap: 8 }}>
+      <button onClick={() => {setCurrentPatient(p);setScreen("novoAtendimento");}}>Atender</button>
+      <button style={ghostBtn}onClick={() => {setCurrentPatient(p);setScreen("prontuario");}}>Historico</button>
+    </div>
+  </div>
+))}
         <button style={primaryBtn} onClick={()=>setScreen("novoPaciente")}>+ Novo</button>
       </Card>
     </>
