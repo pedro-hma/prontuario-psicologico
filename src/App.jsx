@@ -171,24 +171,31 @@ export default function App() {
     setScreen("menu");
   }
   function handleRegister() {
-    const { name, email, password, cep, address, number } = newUser;
-    if (!name || !email || !password || !cep || !address || !number) {
-      return alert("Preencha todos os campos");
-    }
-    setUsers([...users, { id: Date.now(), ...newUser }]);
-    setScreen("login");
-    if (Object.values(newUser).some(v => !v)) {
-  return alert("Preencha todos os campos");
-}
+  const {
+    name,
+    email,
+    password,
+    cep,
+    address,
+    number,
+    neighborhood,
+    city,
+    state
+  } = newUser;
+
+  if (!name ||!email ||!password ||!cep ||!address ||!number ||!neighborhood ||!city ||!state) {
+    return alert("Preencha todos os campos obrigatórios");
   }
+  setUsers([...users, { id: Date.now(), ...newUser }]);
+  setScreen("login");
+}
   function addPatient() {
   const {
     name, email, phone, birthDate,
     cep, address, number, city, state
   } = tempPatient;
 
-  if (!name || !email || !phone || !birthDate ||
-      !cep || !address || !number || !city || !state) {
+  if (!name || !email || !phone || !birthDate || !cep || !address || !number || !city || !state) {
     return alert("Preencha todos os campos obrigatórios");
   }
   setPatients([
@@ -211,7 +218,6 @@ export default function App() {
     }]);
     setScreen("agenda");
   }
-
   function saveSession() {
     if (!currentPatient || !note) return;
     const key = recordKey(currentUser.id, currentPatient.id);
@@ -271,27 +277,16 @@ function formatarDataBR(dataISO) {
         <h2>Novo Usuário</h2>
         <input style={input} placeholder="Nome" onChange={e=>setNewUser({...newUser,name:e.target.value})}/>
         <input style={input} placeholder="Email" onChange={e=>setNewUser({...newUser,email:e.target.value})}/>
-        <input
-          style={input}
-          placeholder="CEP"
-          value={newUser.cep}
-          onChange={e=>{
-            const cep = e.target.value.replace(/\D/g,"");
-            setNewUser(prev=>({...prev,cep}));
-            buscarCEP(cep, setNewUser);
-          }}
-        />
-        <input style={input} placeholder="Rua" value={newUser.address}/>
-        <input style={input} placeholder="Número" onChange={e=>setNewUser({...newUser,number:e.target.value})}/>
-        <input style={input} placeholder="Cidade" value={newUser.city}/>
-        <input style={input} placeholder="Estado" value={newUser.state}/>
+        <input style={input}placeholder="CEP"value={newUser.cep}onChange={e=>{
+          const cep = e.target.value.replace(/\D/g,"");setNewUser(prev=>({...prev, cep}));buscarCEP(cep, setNewUser);}}/>
+          <input style={input} placeholder="Rua" value={newUser.address} readOnly /> 
+          <input style={input} placeholder="Bairro" value={newUser.neighborhood} readOnly />
+          <input style={input} placeholder="Cidade" value={newUser.city} readOnly />      
+          <input style={input} placeholder="Estado" value={newUser.state} readOnly />
+          <input style={input}placeholder="Número"onChange={e=>setNewUser({...newUser, number:e.target.value})}/>
+          <input style={input}placeholder="Complemento"onChange={e=>setNewUser({...newUser, complement:e.target.value})}/>
         <div style={{display:"flex",alignItems:"center",border:"1px solid #ccc",borderRadius:8}}>
-          <input
-            style={{...input,border:"none",marginBottom:0}}
-            type={showRegisterPassword ? "text" : "password"}
-            placeholder="Senha"
-            onChange={e=>setNewUser({...newUser,password:e.target.value})}
-          />
+          <input  style={{...input,border:"none",marginBottom:0}}type={showRegisterPassword ? "text" : "password"}placeholder="Senha"onChange={e=>setNewUser({...newUser,password:e.target.value})}/>
           <span onClick={()=>setShowRegisterPassword(!showRegisterPassword)} style={{padding:10,cursor:"pointer"}}>
             {showRegisterPassword ? <FiEyeOff/> : <FiEye/>}
           </span>
@@ -387,7 +382,14 @@ function formatarDataBR(dataISO) {
       <VoltarMenu setScreen={setScreen} />
       <Card title="Novo Paciente">
         <input style={input} placeholder="Nome" value={tempPatient.name} onChange={e=>setTempPatient({name:e.target.value})}/>
-        <input style={input}placeholder="CEP"value={tempPatient.cep}onChange={e=>{const cep = e.target.value.replace(/\D/g,"");setTempPatient(prev=>({...prev, cep}));buscarCEP(cep, setTempPatient);}}/>
+        <input style={input}placeholder="CEP"value={tempPatient.cep}onChange={e=>{
+          const cep = e.target.value.replace(/\D/g,"");setTempPatient(prev=>({...prev, cep}));buscarCEP(cep, setTempPatient);}}/>
+          <input style={input} placeholder="Rua" value={tempPatient.address} readOnly />
+          <input style={input} placeholder="Bairro" value={tempPatient.neighborhood} readOnly />
+          <input style={input} placeholder="Cidade" value={tempPatient.city} readOnly />
+          <input style={input} placeholder="Estado" value={tempPatient.state} readOnly />
+          <input style={input}placeholder="Número"onChange={e=>setTempPatient({...tempPatient, number:e.target.value})}/>
+          <input style={input}placeholder="Complemento"onChange={e=>setTempPatient({...tempPatient, complement:e.target.value})}/>
         <input type="date" style={input}value={tempPatient.birthDate}onChange={e=>{const data = e.target.value;setTempPatient({...tempPatient,birthDate: data,age: calcularIdade(data)});}}/>
         <input style={input} placeholder="Idade"value={tempPatient.age}disabled/>
         <button style={primaryBtn} onClick={addPatient}>Salvar</button>
