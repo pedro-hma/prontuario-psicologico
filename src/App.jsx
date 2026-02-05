@@ -133,15 +133,17 @@ export default function App() {
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
 
   const [newUser, setNewUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    cep: "",
-    address: "",
-    number: "",
-    city: "",
-    state: ""
-  });
+  name: "",
+  email: "",
+  password: "",
+  cep: "",
+  address: "",
+  number: "",
+  city: "",
+  state: "",
+  role: "profissional"
+});
+
   const [tempPatient, setTempPatient] = useState({
   name: "",
   email: "",
@@ -166,17 +168,47 @@ export default function App() {
     const dataB = new Date(`${b.date}T${b.time}`);
     return dataA - dataB;
   });
-
-  useEffect(() => localStorage.setItem("users", JSON.stringify(users)), [users]);
-  useEffect(() => localStorage.setItem("patients", JSON.stringify(patients)), [patients]);
+  ffect(() => localStorage.setItem("users", JSONuseE.stringify(users)), [users]);
+ useEffect(() => {
+  const savedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+  if (savedUsers.length === 0) {
+    const adminPadrao = [{
+      id: 1,
+      name: "Administrador",
+      email: "admin@admin.com",
+      password: "123",
+      role: "admin"
+    }];
+    setUsers(adminPadrao);
+    localStorage.setItem("users", JSON.stringify(adminPadrao));
+  }
+}, []);
   useEffect(() => localStorage.setItem("appointments", JSON.stringify(appointments)), [appointments]);
   useEffect(() => localStorage.setItem("records", JSON.stringify(records)), [records]);
-  function handleLogin() {
-    const u = users.find(x => x.email === loginEmail && x.password === loginPass);
-    if (!u) return alert("Login inválido");
-    setCurrentUser(u);
+  const ADMIN_BACKUP = {
+  id: "admin-backup",
+  name: "Administrador",
+  email: "admin@backup.com",
+  password: "admin123"
+};
+function handleLogin() {
+  // 🔐 LOGIN ADMIN BACKUP
+  if (
+    loginEmail === ADMIN_BACKUP.email &&
+    loginPass === ADMIN_BACKUP.password
+  ) {
+    setCurrentUser(ADMIN_BACKUP);
     setScreen("menu");
+    return;
   }
+  // 👤 LOGIN NORMAL
+  const u = users.find(
+    x => x.email === loginEmail && x.password === loginPass
+  );
+  if (!u) return alert("Login inválido");
+  setCurrentUser(u);
+  setScreen("menu");
+}
   function handleRegister() {
   const {
     name,
@@ -299,7 +331,6 @@ function formatarDataBR(dataISO) {
           </span>
         </div>
         <button style={{...primaryBtn,width:"100%"}} onClick={handleLogin}>Entrar</button>
-        <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("register")}>Cadastrar</button>
         <button style={{...ghostBtn,width:"100%",marginTop:8}} onClick={()=>setScreen("resetSenha")}>Esqueci minha senha</button>
       </div>
     </div>
