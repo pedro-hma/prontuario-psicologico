@@ -234,40 +234,134 @@ export default function App() {
       </div>
     </div>
   );
+  if (screen === "menu") return layout(
+  <>
+    <h1>Bem-vindo(a), {currentUser?.name}</h1>
 
-  if (screen === "menu") return (
-    <div style={{ display:"flex", minHeight:"100vh", background:colors.bg }}>
-      <Sidebar current={screen} setScreen={setScreen} />
-      <div style={{ padding:28 }}>
-        <h1>Bem-vindo(a), {currentUser?.name}</h1>
-
-        <Card title="Ações rápidas">
-          <button style={primaryBtn} onClick={()=>setScreen("agenda")}>
-            Ver Agenda
-          </button>
-        </Card>
+    {/* CONSULTAS DO DIA */}
+    <div
+      style={{
+        background:"#fff",
+        border:`1px solid ${colors.border}`,
+        borderRadius:14,
+        padding:20,
+        marginBottom:20,
+        cursor:"pointer"
+      }}
+      onClick={()=>setScreen("consultasHoje")}
+    >
+      <div style={{ color: colors.subtext }}>Consultas do dia</div>
+      <div style={{ fontSize:36, fontWeight:700 }}>
+        {
+          myAppointments.filter(
+            a =>
+              a.date === new Date().toISOString().split("T")[0] &&
+              a.status !== "cancelado"
+          ).length
+        }
       </div>
     </div>
-  );
 
-  if (screen === "agenda") return (
-    <div style={{ display:"flex", minHeight:"100vh", background:colors.bg }}>
-      <Sidebar current={screen} setScreen={setScreen} />
-      <div style={{ padding:28, flex:1 }}>
-        <button style={ghostBtn} onClick={()=>setScreen("menu")}>← Voltar</button>
+    {/* AÇÕES RÁPIDAS */}
+    <Card title="Ações rápidas">
+      <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+        <button style={primaryBtn} onClick={()=>setScreen("novoAtendimento")}>
+          Novo Atendimento
+        </button>
 
-        <input type="date" style={input} value={filterDate} onChange={e=>setFilterDate(e.target.value)} />
+        <button style={ghostBtn} onClick={()=>setScreen("novoPaciente")}>
+          Novo Paciente
+        </button>
 
-        <Card title="Agenda">
-          {filteredAppointments.map(a=>(
-            <div key={a.id} style={{ marginBottom:10 }}>
-              <b>{a.patientName}</b> — {formatarDataBR(a.date)} {a.time}
+        <button style={ghostBtn} onClick={()=>setScreen("novoAgendamento")}>
+          Novo Agendamento
+        </button>
+      </div>
+    </Card>
+  </>
+);
+if (screen === "pacientes") return layout(
+  <>
+    <button style={ghostBtn} onClick={()=>setScreen("menu")}> ← Voltar </button>
+    <Card title="Pacientes">
+      <input style={input}placeholder="Buscar paciente"value={search}onChange={e=>setSearch(e.target.value)}/>
+      {myPatients
+        .filter(p =>
+          p.name.toLowerCase().includes(search.toLowerCase())
+        )
+        .map(p => (
+          <div
+            key={p.id}
+            style={{
+              padding:10,
+              borderBottom:`1px solid ${colors.border}`
+            }}
+          >
+            <b>{p.name}</b>
+            <div style={{ marginTop:6, display:"flex", gap:8 }}>
+              <button onClick={()=>{setCurrentPatient(p);setScreen("novoAtendimento");}}>Atender</button>
+              <button onClick={()=>{setTempPatient(p);setScreen("novoPaciente");}}>Editar</button>
+              <button style={ghostBtn}onClick={()=>{setCurrentPatient(p);setScreen("prontuario");}}>Prontuário</button>
             </div>
-          ))}
-        </Card>
-      </div>
-    </div>
-  );
+          </div>
+        ))}
+    </Card>
+  </>
+);
+if (screen === "agenda") return layout(
+  <>
+    <button style={ghostBtn} onClick={()=>setScreen("menu")}>← Voltar</button>
+    <input type="date" style={input}value={filterDate}onChange={e=>setFilterDate(e.target.value)}/>
+    <button style={primaryBtn}onClick={()=>setScreen("novoAgendamento")}>+ Novo Agendamento</button>
+    <Card title="Agenda">
+      {filteredAppointments
+        .sort((a,b)=>{
+          const d1 = new Date(`${a.date}T${a.time}`);
+          const d2 = new Date(`${b.date}T${b.time}`);
+          return d1 - d2;
+        })
+        .map(a => (
+          <div
+            key={a.id}
+            style={{
+              padding:12,
+              borderRadius:10,
+              marginBottom:10,
+              background:
+                a.status === "cancelado" ? "#fdecea" :
+                a.status === "realizado" ? "#e8f5e9" :
+                "#fff3cd"
+            }}
+          >
+            <b>{a.patientName}</b><br/>
+            {formatarDataBR(a.date)} às {a.time}<br/>
+            <small>Status: {a.status || "marcado"}</small>
 
+            <div style={{ marginTop:8, display:"flex", gap:8 }}>
+              {a.status !== "cancelado" && (
+                <button onClick={()=>{setCurrentPatient(myPatients.find(p => p.id === a.patientId));
+                    setAppointments(appointments.map(ap =>
+                      ap.id === a.id
+                        ? { ...ap, status:"realizado" }
+                        : ap
+                    ));
+                    setScreen("novoAtendimento");
+                  }}
+                > Realizar</button>
+              )}
+              <button style={{ background:"#c0392b", color:"#fff", border:"none", padding:6, borderRadius:6 }}onClick={()=>{
+                  setAppointments(appointments.map(ap =>
+                    ap.id === a.id
+                      ? { ...ap, status:"cancelado" }
+                      : ap
+                  ));
+                }}
+              >Cancelar</button>
+            </div>
+          </div>
+        ))}
+    </Card>
+  </>
+);
   return null;
 }
