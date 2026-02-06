@@ -127,24 +127,124 @@ function Card({ title, children }) {
 /* ===================== APP ===================== */
 export default function App() {
   const [screen, setScreen] = useState("login");
+  function handleLogin() {
+  if (!loginEmail || !loginPass) {
+    alert("Informe email e senha");
+    return;
+  }
 
+  const user = users.find(
+    u => u.email === loginEmail && u.password === loginPass
+  );
+
+  if (!user) {
+    alert("Login inválido");
+    return;
+  }
+
+  setCurrentUser(user);
+  setScreen("menu");
+}
   function renderScreen() {
     switch (screen) {
-
       /* ================= LOGIN ================= */
       case "login":
-        return (
-          <div className="center">
-            <h2>Login</h2>
-            <input placeholder="Email" />
-            <input placeholder="Senha" type="password" />
-            <button onClick={()=>setScreen("menu")}>Entrar</button>
-            <button onClick={()=>setScreen("esqueciSenha")}>
-              Esqueci a senha
-            </button>
-          </div>
-        );
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: colors.bg
+      }}
+    >
+      <div
+        style={{
+          width: 360,
+          background: "#fff",
+          padding: 32,
+          borderRadius: 16,
+          border: `1px solid ${colors.border}`,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
+        }}
+      >
+        <h2 style={{ marginBottom: 6, textAlign: "center" }}>
+          Prontuário Psicológico
+        </h2>
 
+        <p
+          style={{
+            textAlign: "center",
+            color: colors.subtext,
+            marginBottom: 24
+          }}
+        >
+          Acesse sua conta
+        </p>
+
+        <input
+          style={input}
+          placeholder="Email"
+          value={loginEmail}
+          onChange={e => setLoginEmail(e.target.value)}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            border: `1px solid ${colors.border}`,
+            borderRadius: 10,
+            marginBottom: 16
+          }}
+        >
+          <input
+            style={{
+              ...input,
+              border: "none",
+              marginBottom: 0
+            }}
+            type={showPassword ? "text" : "password"}
+            placeholder="Senha"
+            value={loginPass}
+            onChange={e => setLoginPass(e.target.value)}
+          />
+
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              padding: 12,
+              cursor: "pointer",
+              color: colors.subtext
+            }}
+          >
+            {showPassword ? <FiEyeOff /> : <FiEye />}
+          </span>
+        </div>
+
+        <button
+          style={{ ...primaryBtn, width: "100%", marginBottom: 12 }}
+          onClick={handleLogin}
+        >
+          Entrar
+        </button>
+
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            color: colors.primary,
+            cursor: "pointer",
+            width: "100%"
+          }}
+          onClick={() => setScreen("esqueciSenha")}
+        >
+          Esqueci minha senha
+        </button>
+      </div>
+    </div>
+  );
       case "esqueciSenha":
         return (
           <div className="center">
@@ -288,6 +388,5 @@ export default function App() {
         return <div>Tela não encontrada</div>;
     }
   }
-
   return renderScreen();
 }
