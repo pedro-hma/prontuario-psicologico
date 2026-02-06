@@ -195,21 +195,77 @@ export default function App() {
     email: "admin@backup.com",
     password: "admin123"
   };
-
   function handleLogin() {
-    if (loginEmail === ADMIN_BACKUP.email && loginPass === ADMIN_BACKUP.password) {
-      setCurrentUser(ADMIN_BACKUP);
-      setScreen("menu");
-      return;
-    }
+  const u = users.find(
+    x => x.email === loginEmail && x.password === loginPass
+  );
+  if (!u) return alert("Login inválido");
 
+  setCurrentUser(u);
+  setScreen("menu");
+}
     const u = users.find(x => x.email === loginEmail && x.password === loginPass);
     if (!u) return alert("Login inválido");
 
     setCurrentUser(u);
     setScreen("menu");
   }
-
+  function handleRegister() {
+  const {
+    name,
+    email,
+    password,
+    cep,
+    address,
+    number,
+    city,
+    state,
+    role
+  } = newUser;
+  // 🔴 Validação obrigatória
+  if (
+    !name ||
+    !email ||
+    !password ||
+    !cep ||
+    !address ||
+    !number ||
+    !city ||
+    !state
+  ) {
+    alert("Preencha todos os campos obrigatórios");
+    return;
+  }
+  // 🔴 Verifica email duplicado
+  const emailExiste = users.some(u => u.email === email);
+  if (emailExiste) {
+    alert("Já existe um usuário com esse email");
+    return;
+  }
+  // ✅ Salva usuário
+  setUsers([
+    ...users,
+    {
+      id: Date.now(),
+      ...newUser,
+      role: role || "profissional"
+    }
+  ]);
+  // 🧹 Limpa formulário
+  setNewUser({
+    name: "",
+    email: "",
+    password: "",
+    cep: "",
+    address: "",
+    number: "",
+    city: "",
+    state: "",
+    role: "profissional"
+  });
+  // 🔁 Volta ao menu
+  setScreen("menu");
+}
   /* ===================== TELAS ===================== */
   if (screen === "login") return (
     <div style={{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh"}}>
@@ -237,7 +293,8 @@ export default function App() {
   if (screen === "menu") return layout(
   <>
     <h1>Bem-vindo(a), {currentUser?.name}</h1>
-
+    {currentUser?.role === "admin" && (
+  <button style={ghostBtn}onClick={() => setScreen("register")}>Cadastrar Usuário</button>)}
     {/* CONSULTAS DO DIA */}
     <div
       style={{
@@ -363,5 +420,217 @@ if (screen === "agenda") return layout(
     </Card>
   </>
 );
-  return null;
+if (screen === "novoAtendimento") return layout(
+  <>
+    <button style={ghostBtn} onClick={()=>setScreen("agenda")}>
+      ← Voltar
+    </button>
+
+    <Card title={`Novo Atendimento • ${currentPatient?.name || ""}`}>
+      <textarea
+        style={{ ...input, height: 150 }}
+        placeholder="Descreva o atendimento..."
+        value={note}
+        onChange={e => setNote(e.target.value)}
+      />
+
+      <button
+        style={primaryBtn}
+        onClick={saveSession}
+      >
+        Salvar Atendimento
+      </button>
+    </Card>
+  </>
+);
+if (screen === "novoAgendamento") return layout(
+  <>
+    <button style={ghostBtn} onClick={()=>setScreen("agenda")}>
+      ← Voltar
+    </button>
+
+    <Card title="Novo Agendamento">
+      <select
+        style={input}
+        value={schedulePatient}
+        onChange={e => setSchedulePatient(e.target.value)}
+      >
+        <option value="">Selecione o paciente</option>
+        {myPatients.map(p => (
+          <option key={p.id} value={p.id}>
+            {p.name}
+          </option>
+        ))}
+      </select>
+
+      <input
+        type="date"
+        style={input}
+        value={scheduleDate}
+        onChange={e => setScheduleDate(e.target.value)}
+      />
+
+      <input
+        type="time"
+        style={input}
+        value={scheduleTime}
+        onChange={e => setScheduleTime(e.target.value)}
+      />
+
+      <button
+        style={primaryBtn}
+        onClick={saveAppointment}
+      >
+        Salvar Agendamento
+      </button>
+    </Card>
+  </>
+);
+if (screen === "prontuario") {
+  const key = recordKey(currentUser.id, currentPatient.id);
+
+  return layout(
+    <>
+      <button style={ghostBtn} onClick={()=>setScreen("pacientes")}>
+        ← Voltar
+      </button>
+
+      <Card title={`Prontuário • ${currentPatient.name}`}>
+        <button
+          style={{ ...ghostBtn, color: "#c0392b", marginBottom: 12 }}
+          onClick={() => {
+            if (!window.confirm("Tem certeza que deseja apagar todo o prontuário?")) return;
+            if (!window.confirm("Essa ação não poderá ser desfeita. Confirmar novamente?")) return;
+
+            setRecords(prev => {
+              const copy = { ...prev };
+              delete copy[key];
+              return copy;
+            });
+          }}
+        >
+          Limpar prontuário
+        </button>
+
+        {(records[key] || []).length === 0 && (
+          <p>Nenhum atendimento registrado.</p>
+        )}
+
+        {(records[key] || []).map((r, i) => (
+          <div key={i} style={{ marginBottom: 12 }}>
+            <small>{r.date}</small>
+            <p>{r.text}</p>
+          </div>
+        ))}
+      </Card>
+    </>
+  );
 }
+if (screen === "novoPaciente") return layout(
+  <>
+    <button style={ghostBtn} onClick={()=>setScreen("pacientes")}>
+      ← Voltar
+    </button>
+
+    <Card title={tempPatient.id ? "Editar Paciente" : "Novo Paciente"}>
+      <input
+        style={input}
+        placeholder="Nome"
+        value={tempPatient.name}
+        onChange={e=>setTempPatient({...tempPatient, name:e.target.value})}
+      />
+
+      <input
+        style={input}
+        placeholder="Telefone"
+        value={tempPatient.phone}
+        onChange={e=>setTempPatient({...tempPatient, phone:e.target.value})}
+      />
+
+      <input
+        type="date"
+        style={input}
+        value={tempPatient.birthDate}
+        onChange={e=>{
+          const data = e.target.value;
+          setTempPatient({
+            ...tempPatient,
+            birthDate: data,
+            age: calcularIdade(data)
+          });
+        }}
+      />
+
+      <input
+        style={input}
+        placeholder="Idade"
+        value={tempPatient.age}
+        disabled
+      />
+
+      <input
+        style={input}
+        placeholder="CEP"
+        value={tempPatient.cep}
+        onChange={e=>{
+          const cep = e.target.value.replace(/\D/g,"");
+          setTempPatient(prev => ({ ...prev, cep }));
+          buscarCEP(cep, setTempPatient);
+        }}
+      />
+
+      <input style={input} placeholder="Rua" value={tempPatient.address} readOnly />
+      <input style={input} placeholder="Bairro" value={tempPatient.neighborhood} readOnly />
+      <input style={input} placeholder="Cidade" value={tempPatient.city} readOnly />
+      <input style={input} placeholder="Estado" value={tempPatient.state} readOnly />
+
+      <input
+        style={input}
+        placeholder="Número"
+        value={tempPatient.number}
+        onChange={e=>setTempPatient({...tempPatient, number:e.target.value})}
+      />
+
+      <input
+        style={input}
+        placeholder="Complemento"
+        value={tempPatient.complement}
+        onChange={e=>setTempPatient({...tempPatient, complement:e.target.value})}
+      />
+
+      <input
+        style={input}
+        placeholder="Nome da mãe"
+        value={tempPatient.mother}
+        onChange={e=>setTempPatient({...tempPatient, mother:e.target.value})}
+      />
+
+      <input
+        style={input}
+        placeholder="Nome do pai"
+        value={tempPatient.father}
+        onChange={e=>setTempPatient({...tempPatient, father:e.target.value})}
+      />
+
+      <input
+        style={input}
+        placeholder="Escola"
+        value={tempPatient.school}
+        onChange={e=>setTempPatient({...tempPatient, school:e.target.value})}
+      />
+
+      <textarea
+        style={input}
+        placeholder="Observações"
+        value={tempPatient.notes}
+        onChange={e=>setTempPatient({...tempPatient, notes:e.target.value})}
+      />
+
+      <button style={primaryBtn} onClick={addPatient}>
+        Salvar
+      </button>
+    </Card>
+  </>
+);
+  console.log("SCREEN ATUAL:", screen);
+  return null;
