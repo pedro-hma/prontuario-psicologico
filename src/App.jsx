@@ -631,6 +631,7 @@ if (screen === "novoPaciente") return layout(
       </button>
     </Card>
   </>
-);
+); 
+
   console.log("SCREEN ATUAL:", screen);
   return null;
