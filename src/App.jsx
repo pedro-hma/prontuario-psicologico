@@ -180,27 +180,66 @@ export default function App() {
             onChange={(e) => setBusca(e.target.value)}
           />
 
-          {pacientes
-            .filter((p) => p.nome.toLowerCase().includes(busca.toLowerCase()))
-            .sort((a, b) => a.nome.localeCompare(b.nome))
-            .map((p) => (
-              <div key={p.id} style={{ background: "#fff", padding: 12, marginBottom: 8 }}>
-                <strong>{p.nome}</strong>
-                <div>
-                  <button>Dados</button>
-                  <button>Editar</button>
-                  <button>Prontuário</button>
-                  <button
-                    onClick={() =>
-                      window.confirm("Remover paciente?") &&
-                      setPacientes(pacientes.filter((x) => x.id !== p.id))
-                    }
-                  >
-                    Remover
-                  </button>
-                </div>
-              </div>
-            ))}
+         {pacientes
+  .filter(p =>
+    p.nome.toLowerCase().includes(busca.toLowerCase())
+  )
+  .sort((a, b) => a.nome.localeCompare(b.nome))
+  .map(p => (
+    <div
+      key={p.id}
+      style={{
+        background: "#fff",
+        padding: 12,
+        marginBottom: 8,
+        borderRadius: 8
+      }}
+    >
+      <strong>{p.nome}</strong>
+
+      <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+        {/* DADOS */}
+        <button
+          onClick={() => {
+            setPacienteSelecionado(p);
+            setScreen("dadosPaciente");
+          }}
+        >
+          Dados
+        </button>
+
+        {/* EDITAR */}
+        <button
+          onClick={() => {
+            setPacienteSelecionado(p);
+            setScreen("editarPaciente");
+          }}
+        >
+          Editar
+        </button>
+
+        {/* PRONTUÁRIO */}
+        <button
+          onClick={() => {
+            setPacienteSelecionado(p);
+            setScreen("prontuario");
+          }}
+        >
+          Prontuário
+        </button>
+
+        {/* REMOVER */}
+        <button
+          onClick={() => {
+            if (!window.confirm("Deseja remover este paciente?")) return;
+            setPacientes(prev => prev.filter(x => x.id !== p.id));
+          }}
+        >
+          Remover
+        </button>
+      </div>
+    </div>
+  ))}
         </>
       );
 
