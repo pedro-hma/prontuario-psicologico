@@ -55,7 +55,8 @@ function Status({ status }) {
     agendado: colors.warning,
     realizado: colors.success,
     cancelado: colors.danger,
-  };
+  }
+}
   function calcularIdade(data) {
   if (!data) return "";
   const hoje = new Date();
@@ -78,10 +79,12 @@ function Status({ status }) {
       {status}
     </span>
   );
-}
 
 /* ===================== APP ===================== */
 export default function App() {
+  const [usuarios, setUsuarios] = useState([
+  { email: "admin@email.com", password: "123456", name: "Admin" }]);
+
   const [screen, setScreen] = useState("login");
   function handleLogin() {
   if (!loginEmail || !loginPass) {
