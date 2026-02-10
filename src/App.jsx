@@ -21,8 +21,6 @@ const input = {
 };
 
 /* ===================== DADOS MOCK ===================== */
-const users = [{ email: "admin@email.com", password: "123456", name: "Admin" }];
-
 const pacientesMock = [
   { id: 1, nome: "Ana Paula" },
   { id: 2, nome: "Bruno Silva" },
@@ -90,6 +88,7 @@ function calcularIdade(data) {
 }
 /* ===================== APP ===================== */
 export default function App() {
+  const [currentUser, setCurrentUser] = useState(null);
   const [screen, setScreen] = useState("login");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPass, setLoginPass] = useState("");
@@ -116,7 +115,6 @@ export default function App() {
     alert("Informe email e senha");
     return;
   }
-
   const user = usuarios.find(
     u => u.email === loginEmail && u.password === loginPass
   );
@@ -125,8 +123,7 @@ export default function App() {
     alert("Email ou senha inválidos");
     return;
   }
-
-  setCurrentUser(user);
+ // setCurrentUser(user);
   setScreen("menu");
 }
   function cancelarConsulta(id) {
