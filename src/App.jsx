@@ -64,7 +64,15 @@ function Status({ status }) {
     realizado: colors.success,
     cancelado: colors.danger,
   };
-
+  function calcularIdade(data) {
+  if (!data) return "";
+  const hoje = new Date();
+  const nasc = new Date(data);
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  return idade;
+}
   return (
     <span
       style={{
@@ -88,6 +96,8 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [pacientes, setPacientes] = useState(pacientesMock);
   const [consultas, setConsultas] = useState(consultasMock);
+  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
+  const [prontuarios, setProntuarios] = useState({});
   const [busca, setBusca] = useState("");
 
   const hoje = "2026-02-10";
@@ -221,7 +231,164 @@ export default function App() {
             ))}
         </>
       );
+      case "novoAgendamento":
+  return layout(
+    <>
+      <h2>Novo agendamento</h2>
 
+      <select id="paciente">
+        {pacientes.map(p => (
+          <option key={p.id} value={p.nome}>{p.nome}</option>
+        ))}
+      </select>
+
+      <input type="date" id="data" />
+      <input type="time" id="hora" />
+
+      <button onClick={() => {
+        const paciente = document.getElementById("paciente").value;
+        const data = document.getElementById("data").value;
+        const hora = document.getElementById("hora").value;
+
+        const conflito = consultas.find(c =>
+          c.data === data &&
+          c.hora === hora &&
+          c.status !== "cancelado"
+        );
+
+        if (conflito) {
+          alert("Já existe consulta nesse horário");
+          return;
+        }
+
+        setConsultas(prev => [
+          ...prev,
+          {
+            id: Date.now(),
+            paciente,
+            data,
+            hora,
+            status: "agendado"
+          }
+        ]);
+
+        setScreen("agenda");
+      }}>
+        Salvar
+      </button>
+    </>
+  );
+  case "novoAtendimento":
+  return layout(
+    <>
+      <h2>Novo atendimento</h2>
+
+      <select onChange={e => setPacienteSelecionado(e.target.value)}>
+        <option value="">Selecione o paciente</option>
+        {pacientes.map(p => (
+          <option key={p.id} value={p.id}>{p.nome}</option>
+        ))}
+      </select>
+
+      <textarea
+        id="texto"
+        placeholder="Escreva o atendimento..."
+        style={{ width: "100%", height: 200 }}
+      />
+
+      <button onClick={() => {
+        const texto = document.getElementById("texto").value;
+        if (!texto) return alert("Texto obrigatório");
+
+        setProntuarios(prev => ({
+          ...prev,
+          [pacienteSelecionado]: [
+            ...(prev[pacienteSelecionado] || []),
+            { data: new Date().toISOString(), texto }
+          ]
+        }));
+
+        setScreen("prontuario");
+      }}>
+        Salvar atendimento
+      </button>
+    </>
+  );
+  case "novoPaciente":
+case "editarPaciente":
+  return layout(
+    <>
+      <h2>{screen === "novoPaciente" ? "Novo paciente" : "Editar paciente"}</h2>
+
+      <input id="nome" placeholder="Nome" defaultValue={pacienteSelecionado?.nome || ""} />
+      <input id="cpf" placeholder="CPF" defaultValue={pacienteSelecionado?.cpf || ""} />
+      <input
+        type="date"
+        id="nasc"
+        onChange={e =>
+          document.getElementById("idade").value = calcularIdade(e.target.value)
+        }
+      />
+      <input id="idade" placeholder="Idade" disabled />
+
+      <select id="pagamento">
+        <option>PIX</option>
+        <option>Cartão</option>
+        <option>Boleto</option>
+      </select>
+
+      <button onClick={() => {
+        const novo = {
+          id: pacienteSelecionado?.id || Date.now(),
+          nome: document.getElementById("nome").value,
+          cpf: document.getElementById("cpf").value,
+        };
+
+        setPacientes(prev =>
+          screen === "novoPaciente"
+            ? [...prev, novo]
+            : prev.map(p => p.id === novo.id ? novo : p)
+        );
+
+        setScreen("pacientes");
+      }}>
+        Salvar
+      </button>
+    </>
+  );
+  case "prontuario":
+  const lista = prontuarios[pacienteSelecionado] || [];
+
+  return layout(
+    <>
+      <h2>Prontuário</h2>
+
+      {lista
+        .sort((a, b) => new Date(a.data) - new Date(b.data))
+        .map((p, i) => (
+          <div key={i}>
+            <strong>{new Date(p.data).toLocaleDateString()}</strong>
+            <p>{p.texto}</p>
+          </div>
+        ))}
+
+      <button onClick={() => {
+        if (!window.confirm("Tem certeza que deseja limpar o prontuário?")) return;
+        setProntuarios(prev => ({ ...prev, [pacienteSelecionado]: [] }));
+      }}>
+        Limpar prontuário
+      </button>
+    </>
+  );
+  case "dadosPaciente":
+  return layout(
+    <>
+      <h2>Dados do paciente</h2>
+      <p><strong>Nome:</strong> {pacienteSelecionado.nome}</p>
+      <p><strong>CPF:</strong> {pacienteSelecionado.cpf}</p>
+      <button onClick={() => setScreen("pacientes")}>Voltar</button>
+    </>
+  );
     default:
       return <div>Tela em construção</div>;
   }
