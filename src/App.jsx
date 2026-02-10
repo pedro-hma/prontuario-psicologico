@@ -17,10 +17,29 @@ const input = {
   padding: 12,
   borderRadius: 8,
   border: `1px solid ${colors.border}`,
-  marginBottom: 12,
+  marginBottom: 14
 };
-/* ===================== COMPONENTES ===================== */
-function Sidebar({ setScreen }) {
+
+const primaryBtn = {
+  background: colors.primary,
+  color: "#fff",
+  border: "none",
+  padding: "12px 18px",
+  borderRadius: 10,
+  cursor: "pointer",
+  fontWeight: 600
+};
+
+const ghostBtn = {
+  background: "transparent",
+  border: `1px solid ${colors.border}`,
+  padding: "12px 18px",
+  borderRadius: 10,
+  cursor: "pointer"
+};
+
+/* ===================== HELPERS ===================== */
+function VoltarMenu({ setScreen }) {
   return (
     <div style={{ width: 220, background: "#fff", padding: 16 }}>
       <h3>Prontuário</h3>
@@ -64,71 +83,132 @@ function Status({ status }) {
 /* ===================== APP ===================== */
 export default function App() {
   const [screen, setScreen] = useState("login");
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPass, setLoginPass] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [pacientes, setPacientes] = useState(pacientesMock);
-  const [consultas, setConsultas] = useState(consultasMock);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
-  const [prontuarios, setProntuarios] = useState({});
-  const [busca, setBusca] = useState("");
-  const [usuarios, setUsuarios] = useState([{ email: "admin@email.com", password: "123456", name: "Admin" }]);
-  const hoje = "2026-02-10";
-
-  function layout(children) {
-    return (
-      <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
-        <Sidebar setScreen={setScreen} />
-        <div style={{ flex: 1, padding: 24 }}>{children}</div>
-      </div>
-    );
-  }
   function handleLogin() {
-    if (!loginEmail || !loginPass) {
-      alert("Informe email e senha");
-     return;
-    }
-  const ok = usuarios.find(
+  if (!loginEmail || !loginPass) {
+    alert("Informe email e senha");
+    return;
+  }
+
+  const user = users.find(
     u => u.email === loginEmail && u.password === loginPass
   );
 
-  if (!ok) {
-      alert("Email ou senha inválidos");
-     return;
+  if (!user) {
+    alert("Login inválido");
+    return;
   }
 
+  setCurrentUser(user);
   setScreen("menu");
 }
-  function cancelarConsulta(id) {
-    if (!window.confirm("Deseja realmente cancelar esta consulta?")) return;
-    setConsultas((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, status: "cancelado" } : c
-      )
-    );
-  }
+  function renderScreen() {
+    switch (screen) {
+      /* ================= LOGIN ================= */
+      case "login":
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        background: colors.bg
+      }}
+    >
+      <div
+        style={{
+          width: 360,
+          background: "#fff",
+          padding: 32,
+          borderRadius: 16,
+          border: `1px solid ${colors.border}`,
+          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
+        }}
+      >
+        <h2 style={{ marginBottom: 6, textAlign: "center" }}>
+          Prontuário Psicológico
+        </h2>
 
-  /* ===================== TELAS ===================== */
-  switch (screen) {
-    case "login":
-      return (
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: 320, background: "#fff", padding: 24 }}>
-            <h2>Login</h2>
-            <input style={input} placeholder="Email" onChange={(e) => setLoginEmail(e.target.value)} />
-            <input
-              style={input}
-              type={showPassword ? "text" : "password"}
-              placeholder="Senha"
-              onChange={(e) => setLoginPass(e.target.value)}
-            />
-            <button onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? <FiEyeOff /> : <FiEye />}
-            </button>
-            <button onClick={handleLogin}>Entrar</button>
-          </div>
+        <p
+          style={{
+            textAlign: "center",
+            color: colors.subtext,
+            marginBottom: 24
+          }}
+        >
+          Acesse sua conta
+        </p>
+
+        <input
+          style={input}
+          placeholder="Email"
+          value={loginEmail}
+          onChange={e => setLoginEmail(e.target.value)}
+        />
+
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            border: `1px solid ${colors.border}`,
+            borderRadius: 10,
+            marginBottom: 16
+          }}
+        >
+          <input
+            style={{
+              ...input,
+              border: "none",
+              marginBottom: 0
+            }}
+            type={showPassword ? "text" : "password"}
+            placeholder="Senha"
+            value={loginPass}
+            onChange={e => setLoginPass(e.target.value)}
+          />
+
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              padding: 12,
+              cursor: "pointer",
+              color: colors.subtext
+            }}
+          >
+            {showPassword ? <FiEyeOff /> : <FiEye />}
+          </span>
         </div>
-      );
+
+        <button
+          style={{ ...primaryBtn, width: "100%", marginBottom: 12 }}
+          onClick={handleLogin}
+        >
+          Entrar
+        </button>
+
+        <button
+          style={{
+            background: "transparent",
+            border: "none",
+            color: colors.primary,
+            cursor: "pointer",
+            width: "100%"
+          }}
+          onClick={() => setScreen("esqueciSenha")}
+        >
+          Esqueci minha senha
+        </button>
+      </div>
+    </div>
+  );
+      case "esqueciSenha":
+        return (
+          <div className="center">
+            <h2>Recuperar senha</h2>
+            <input placeholder="Email" />
+            <button onClick={()=>setScreen("login")}>Enviar</button>
+          </div>
+        );
 
     /* ================= MENU ================= */
     case "menu":
@@ -136,20 +216,33 @@ export default function App() {
         <>
           <h1>Menu</h1>
 
-          <div>
-            <strong>Pacientes:</strong> {pacientes.length} <br />
-            <strong>Consultas hoje:</strong>{" "}
-            {consultas.filter((c) => c.data === hoje).length}
-          </div>
-          <h3>Ações rápidas</h3>
-          <button onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
-          <button onClick={() => setScreen("novoAtendimento")}>Novo atendimento</button>
-          <button onClick={() => setScreen("novoPaciente")}>Novo paciente</button>
-          <hr />
-          <button onClick={() => setScreen("novoUsuario")}> Cadastrar usuário</button>
+            <div className="top-cards">
+              <div onClick={()=>setScreen("pacientes")}>
+                Pacientes
+              </div>
 
-        </>
-      );
+              <div onClick={()=>setScreen("consultasHoje")}>
+                Consultas do dia
+              </div>
+            </div>
+
+            <button onClick={()=>setScreen("novoUsuario")}>
+              Cadastrar usuário
+            </button>
+
+            <div className="actions">
+              <button onClick={()=>setScreen("novoAtendimento")}>
+                Novo atendimento
+              </button>
+              <button onClick={()=>setScreen("novoAgendamento")}>
+                Novo agendamento
+              </button>
+              <button onClick={()=>setScreen("novoPaciente")}>
+                Novo paciente
+              </button>
+            </div>
+          </>
+        );
 
     /* ================= PACIENTES ================= */
     case "pacientes":
@@ -225,224 +318,95 @@ export default function App() {
         </>
       );
 
-    /* ================= AGENDA ================= */
-    case "agenda":
-      return layout(
-        <>
-          <button onClick={() => setScreen("menu")}>← Voltar</button>
-          <h2>
-            <FiCalendar /> Agenda
-          </h2>
-          <button onClick={() => setScreen("novoAgendamento")}>
-            Novo agendamento
-          </button>
+      /* ================= AGENDA ================= */
+      case "agenda":
+        return layout(
+          <>
+            <button onClick={()=>setScreen("novoAgendamento")}>
+              Novo agendamento
+            </button>
+            <div>Agenda cronológica</div>
+          </>
+        );
 
-          {consultas
-            .sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
-            .map((c) => (
-              <div key={c.id} style={{ background: "#fff", padding: 12, marginBottom: 8 }}>
-                <strong>{c.paciente}</strong> – {c.data} {c.hora}
-                <Status status={c.status} />
-                {c.status === "agendado" && (
-                  <button onClick={() => cancelarConsulta(c.id)}>
-                    Cancelar
-                  </button>
-                )}
-              </div>
-            ))}
-        </>
-      );
+      /* ================= NOVO USUÁRIO ================= */
+      case "novoUsuario":
+        return layout(
+          <>
+            <h2>Novo usuário</h2>
+            <input placeholder="Nome" />
+            <input placeholder="Email" />
+            <input placeholder="CEP" />
+            <input placeholder="Rua" />
+            <input placeholder="Bairro" />
+            <input placeholder="Cidade" />
+            <input placeholder="Número" />
+            <input placeholder="Complemento" />
+            <button onClick={()=>setScreen("menu")}>Salvar</button>
+          </>
+        );
+
+      /* ================= NOVO PACIENTE ================= */
+      case "novoPaciente":
+        return layout(
+          <>
+            <h2>Novo paciente</h2>
+            <input placeholder="Nome" />
+            <input type="date" />
+            <input placeholder="Idade (auto)" disabled />
+            <select>
+              <option>PIX</option>
+              <option>Cartão</option>
+              <option>Boleto</option>
+            </select>
+            <input placeholder="Nome da mãe" />
+            <input placeholder="Nome do pai" />
+            <input placeholder="Escola (se menor)" />
+            <button>Salvar</button>
+          </>
+        );
+
+      /* ================= NOVO AGENDAMENTO ================= */
       case "novoAgendamento":
-  return layout(
-    <>
-      <h2>Novo agendamento</h2>
-
-      <select id="paciente">
-        {pacientes.map(p => (
-          <option key={p.id} value={p.nome}>{p.nome}</option>
-        ))}
-      </select>
-
-      <input type="date" id="data" />
-      <input type="time" id="hora" />
-
-      <button onClick={() => {
-        const paciente = document.getElementById("paciente").value;
-        const data = document.getElementById("data").value;
-        const hora = document.getElementById("hora").value;
-
-        const conflito = consultas.find(c =>
-          c.data === data &&
-          c.hora === hora &&
-          c.status !== "cancelado"
+        return layout(
+          <>
+            <select>
+              <option>Paciente</option>
+            </select>
+            <input type="date" />
+            <input type="time" />
+            <button>Salvar</button>
+          </>
         );
 
-        if (conflito) {
-          alert("Já existe consulta nesse horário");
-          return;
-        }
-
-        setConsultas(prev => [
-          ...prev,
-          {
-            id: Date.now(),
-            paciente,
-            data,
-            hora,
-            status: "agendado"
-          }
-        ]);
-
-        setScreen("agenda");
-      }}>
-        Salvar
-      </button>
-    </>
-  );
-  case "novoAtendimento":
-  return layout(
-    <>
-      <h2>Novo atendimento</h2>
-
-      <select onChange={e => setPacienteSelecionado(e.target.value)}>
-        <option value="">Selecione o paciente</option>
-        {pacientes.map(p => (
-          <option key={p.id} value={p.id}>{p.nome}</option>
-        ))}
-      </select>
-
-      <textarea
-        id="texto"
-        placeholder="Escreva o atendimento..."
-        style={{ width: "100%", height: 200 }}
-      />
-
-      <button onClick={() => {
-        const texto = document.getElementById("texto").value;
-        if (!texto) return alert("Texto obrigatório");
-
-        setProntuarios(prev => ({
-          ...prev,
-          [pacienteSelecionado]: [
-            ...(prev[pacienteSelecionado] || []),
-            { data: new Date().toISOString(), texto }
-          ]
-        }));
-
-        setScreen("prontuario");
-      }}>
-        Salvar atendimento
-      </button>
-    </>
-  );
-  case "novoPaciente":
-case "editarPaciente":
-  return layout(
-    <>
-      <h2>{screen === "novoPaciente" ? "Novo paciente" : "Editar paciente"}</h2>
-
-      <input id="nome" placeholder="Nome" defaultValue={pacienteSelecionado?.nome || ""} />
-      <input id="cpf" placeholder="CPF" defaultValue={pacienteSelecionado?.cpf || ""} />
-      <input
-        type="date"
-        id="nasc"
-        onChange={e =>
-          document.getElementById("idade").value = calcularIdade(e.target.value)
-        }
-      />
-      <input id="idade" placeholder="Idade" disabled />
-
-      <select id="pagamento">
-        <option>PIX</option>
-        <option>Cartão</option>
-        <option>Boleto</option>
-      </select>
-
-      <button onClick={() => {
-        const novo = {
-          id: pacienteSelecionado?.id || Date.now(),
-          nome: document.getElementById("nome").value,
-          cpf: document.getElementById("cpf").value,
-        };
-
-        setPacientes(prev =>
-          screen === "novoPaciente"
-            ? [...prev, novo]
-            : prev.map(p => p.id === novo.id ? novo : p)
+      /* ================= NOVO ATENDIMENTO ================= */
+      case "novoAtendimento":
+        return layout(
+          <>
+            <select>
+              <option>Paciente</option>
+            </select>
+            <select>
+              <option>Consulta agendada</option>
+            </select>
+            <textarea />
+            <button>Salvar atendimento</button>
+          </>
         );
 
-        setScreen("pacientes");
-      }}>
-        Salvar
-      </button>
-    </>
-  );
-  case "prontuario":
-  const lista = prontuarios[pacienteSelecionado] || [];
+      /* ================= PRONTUÁRIO ================= */
+      case "prontuario":
+        return layout(
+          <>
+            <h2>Prontuário</h2>
+            <div>Histórico cronológico</div>
+            <button>Editar</button>
+            <button>Limpar prontuário</button>
+          </>
+        );
 
-  return layout(
-    <>
-      <h2>Prontuário</h2>
-
-      {lista
-        .sort((a, b) => new Date(a.data) - new Date(b.data))
-        .map((p, i) => (
-          <div key={i}>
-            <strong>{new Date(p.data).toLocaleDateString()}</strong>
-            <p>{p.texto}</p>
-          </div>
-        ))}
-
-      <button onClick={() => {
-        if (!window.confirm("Tem certeza que deseja limpar o prontuário?")) return;
-        setProntuarios(prev => ({ ...prev, [pacienteSelecionado]: [] }));
-      }}>
-        Limpar prontuário
-      </button>
-    </>
-  );
-  case "dadosPaciente":
-  return layout(
-    <>
-      <h2>Dados do paciente</h2>
-      <p><strong>Nome:</strong> {pacienteSelecionado.nome}</p>
-      <p><strong>CPF:</strong> {pacienteSelecionado.cpf}</p>
-      <button onClick={() => setScreen("pacientes")}>Voltar</button>
-    </>
-  );
-  case "novoUsuario":
-  return layout(
-    <>
-      <h2>Novo usuário</h2>
-      <input id="nomeUsuario" placeholder="Nome" />
-      <input id="emailUsuario" placeholder="Email" />
-      <input id="senhaUsuario" type="password"placeholder="Senha"/>
-      <button onClick={() => {
-        const nome = document.getElementById("nomeUsuario").value;
-        const email = document.getElementById("emailUsuario").value;
-        const senha = document.getElementById("senhaUsuario").value;
-          if (!nome || !email || !senha) {
-            alert("Preencha todos os campos");
-            return;
-          }
-          const existe = usuarios.find(u => u.email === email);
-          if (existe) {
-            alert("Já existe um usuário com esse email");
-            return;
-          }
-          setUsuarios(prev => [
-            ...prev,
-            { name: nome, email, password: senha }
-          ]);
-          alert("Usuário cadastrado com sucesso!");
-          setScreen("menu");
-        }}
-      >Salvar usuário </button>
-      <br /><br />
-      <button onClick={() => setScreen("menu")}> ← Voltar</button>
-    </>
-  );
-    default:
-      return <div>Tela em construção</div>;
+      default:
+        return <div>Tela não encontrada</div>;
+    }
   }
 }
