@@ -99,10 +99,10 @@ export default function App() {
   const [busca, setBusca] = useState("");
   const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
   const [prontuarios, setProntuarios] = useState({});
-
-
+  const [usuarios, setUsuarios] = useState([
+  { email: "admin@email.com", password: "123456", name: "Administrador" }
+]);
   const hoje = "2026-02-10";
-
   function layout(children) {
     return (
       <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
@@ -111,15 +111,24 @@ export default function App() {
       </div>
     );
   }
-
   function handleLogin() {
-    const ok = users.find(
-      (u) => u.email === loginEmail && u.password === loginPass
-    );
-    if (!ok) return alert("Login inválido");
-    setScreen("menu");
+  if (!loginEmail || !loginPass) {
+    alert("Informe email e senha");
+    return;
   }
 
+  const user = usuarios.find(
+    u => u.email === loginEmail && u.password === loginPass
+  );
+
+  if (!user) {
+    alert("Email ou senha inválidos");
+    return;
+  }
+
+  setCurrentUser(user);
+  setScreen("menu");
+}
   function cancelarConsulta(id) {
     if (!window.confirm("Deseja realmente cancelar esta consulta?")) return;
     setConsultas((prev) =>
@@ -156,13 +165,12 @@ export default function App() {
       return layout(
         <>
           <h1>Menu</h1>
-
           <div>
             <strong>Pacientes:</strong> {pacientes.length} <br />
             <strong>Consultas hoje:</strong>{" "}
             {consultas.filter((c) => c.data === hoje).length}
+            <button onClick={() => setScreen("novoUsuario")} style={{ marginTop: 12 }}>Cadastrar usuário</button>
           </div>
-
           <h3>Ações rápidas</h3>
           <button onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
           <button onClick={() => setScreen("novoAtendimento")}>Novo atendimento</button>
@@ -390,6 +398,42 @@ case "editarPaciente":
       <p><strong>Forma de pagamento:</strong> {pacienteSelecionado.pagamento}</p>
 
       <button onClick={() => setScreen("pacientes")}> ← Voltar</button>
+    </>
+  );
+  case "novoUsuario":
+  return layout(
+    <>
+      <h2>Novo usuário</h2>
+      <input id="nomeUsuario" placeholder="Nome" />
+      <input id="emailUsuario" placeholder="Email" />
+      <input id="senhaUsuario" type="password"placeholder="Senha"/>
+      <button onClick={() => {
+          const nome = document.getElementById("nomeUsuario").value;
+          const email = document.getElementById("emailUsuario").value;
+          const senha = document.getElementById("senhaUsuario").value;
+          if (!nome || !email || !senha) {
+            alert("Preencha todos os campos");
+            return;
+          }
+          const existe = usuarios.find(u => u.email === email);
+          if (existe) {
+            alert("Já existe um usuário com esse email");
+            return;
+          }
+          setUsuarios(prev => [
+            ...prev,
+            { name: nome, email, password: senha }
+          ]);
+          alert("Usuário cadastrado com sucesso!");
+          setScreen("menu");
+        }}
+      >
+        Salvar usuário
+      </button>
+      <br /><br />
+      <button onClick={() => setScreen("menu")}>
+        ← Voltar
+      </button>
     </>
   );
     default:
