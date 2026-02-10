@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 /* ===================== ESTILO ===================== */
@@ -8,16 +8,15 @@ const colors = {
   border: "#e2e8e7",
   text: "#243333",
   subtext: "#6b7c7c",
-  danger: "#c0392b",
 };
 
-const input = {
+const inputStyle = {
   width: "100%",
   padding: 14,
   fontSize: 15,
   borderRadius: 10,
   border: `1px solid ${colors.border}`,
-  marginBottom: 14
+  marginBottom: 14,
 };
 
 const primaryBtn = {
@@ -27,62 +26,13 @@ const primaryBtn = {
   padding: "12px 18px",
   borderRadius: 10,
   cursor: "pointer",
-  fontWeight: 600
+  fontWeight: 600,
 };
 
-const ghostBtn = {
-  background: "transparent",
-  border: `1px solid ${colors.border}`,
-  padding: "12px 18px",
-  borderRadius: 10,
-  cursor: "pointer"
-};
-
-/* ===================== HELPERS ===================== */
-function VoltarMenu({ setScreen }) {
-  return (
-    <button style={{ ...ghostBtn, marginBottom: 16 }} onClick={() => setScreen("menu")}>
-      ← Voltar ao Menu
-    </button>
-  );
-}
-
-function recordKey(professionalId, patientId) {
-  return `${professionalId}_${patientId}`;
-}
-
-async function buscarCEP(cep, setData) {
-  if (cep.length !== 8) return;
-
-  const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-  const data = await res.json();
-
-  if (data.erro) return alert("CEP inválido");
-
-  setData(prev => ({
-    ...prev,
-    address: data.logradouro,
-    neighborhood: data.bairro,
-    city: data.localidade,
-    state: data.uf
-  }));
-}
-
-function calcularIdade(data) {
-  if (!data) return "";
-  const hoje = new Date();
-  const nasc = new Date(data);
-  let idade = hoje.getFullYear() - nasc.getFullYear();
-  const m = hoje.getMonth() - nasc.getMonth();
-  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
-  return idade;
-}
-
-function formatarDataBR(dataISO) {
-  if (!dataISO) return "";
-  const [ano, mes, dia] = dataISO.split("-");
-  return `${dia}/${mes}/${ano}`;
-}
+/* ===================== DADOS FAKE ===================== */
+const users = [
+  { email: "admin@email.com", password: "123456", name: "Admin" },
+];
 
 /* ===================== COMPONENTES ===================== */
 function Sidebar({ current, setScreen }) {
@@ -98,7 +48,7 @@ function Sidebar({ current, setScreen }) {
         background: current === id ? colors.primary : "transparent",
         color: current === id ? "#fff" : colors.text,
         marginBottom: 6,
-        textAlign: "left"
+        textAlign: "left",
       }}
     >
       {label}
@@ -106,7 +56,14 @@ function Sidebar({ current, setScreen }) {
   );
 
   return (
-    <div style={{ width: 220, background: "#fff", borderRight: `1px solid ${colors.border}`, padding: 16 }}>
+    <div
+      style={{
+        width: 220,
+        background: "#fff",
+        borderRight: `1px solid ${colors.border}`,
+        padding: 16,
+      }}
+    >
       <h3>Prontuário</h3>
       <Item id="menu" label="Menu" />
       <Item id="pacientes" label="Pacientes" />
@@ -115,142 +72,97 @@ function Sidebar({ current, setScreen }) {
   );
 }
 
-function Card({ title, children }) {
-  return (
-    <div style={{ background: "#fff", borderRadius: 14, border: `1px solid ${colors.border}`, padding: 20 }}>
-      {title && <h2>{title}</h2>}
-      {children}
-    </div>
-  );
-}
-
 /* ===================== APP ===================== */
 export default function App() {
   const [screen, setScreen] = useState("login");
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPass, setLoginPass] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
   function handleLogin() {
-  if (!loginEmail || !loginPass) {
-    alert("Informe email e senha");
-    return;
+    if (!loginEmail || !loginPass) {
+      alert("Informe email e senha");
+      return;
+    }
+
+    const user = users.find(
+      (u) => u.email === loginEmail && u.password === loginPass
+    );
+
+    if (!user) {
+      alert("Login inválido");
+      return;
+    }
+
+    setCurrentUser(user);
+    setScreen("menu");
   }
 
-  const user = users.find(
-    u => u.email === loginEmail && u.password === loginPass
-  );
-
-  if (!user) {
-    alert("Login inválido");
-    return;
+  function layout(children) {
+    return (
+      <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
+        <Sidebar current={screen} setScreen={setScreen} />
+        <div style={{ flex: 1, padding: 24 }}>{children}</div>
+      </div>
+    );
   }
 
-  setCurrentUser(user);
-  setScreen("menu");
-}
   function renderScreen() {
     switch (screen) {
       /* ================= LOGIN ================= */
       case "login":
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: colors.bg
-      }}
-    >
-      <div
-        style={{
-          width: 360,
-          background: "#fff",
-          padding: 32,
-          borderRadius: 16,
-          border: `1px solid ${colors.border}`,
-          boxShadow: "0 10px 25px rgba(0,0,0,0.08)"
-        }}
-      >
-        <h2 style={{ marginBottom: 6, textAlign: "center" }}>
-          Prontuário Psicológico
-        </h2>
-
-        <p
-          style={{
-            textAlign: "center",
-            color: colors.subtext,
-            marginBottom: 24
-          }}
-        >
-          Acesse sua conta
-        </p>
-
-        <input
-          style={input}
-          placeholder="Email"
-          value={loginEmail}
-          onChange={e => setLoginEmail(e.target.value)}
-        />
-
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            border: `1px solid ${colors.border}`,
-            borderRadius: 10,
-            marginBottom: 16
-          }}
-        >
-          <input
+        return (
+          <div
             style={{
-              ...input,
-              border: "none",
-              marginBottom: 0
-            }}
-            type={showPassword ? "text" : "password"}
-            placeholder="Senha"
-            value={loginPass}
-            onChange={e => setLoginPass(e.target.value)}
-          />
-
-          <span
-            onClick={() => setShowPassword(!showPassword)}
-            style={{
-              padding: 12,
-              cursor: "pointer",
-              color: colors.subtext
+              minHeight: "100vh",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              background: colors.bg,
             }}
           >
-            {showPassword ? <FiEyeOff /> : <FiEye />}
-          </span>
-        </div>
+            <div
+              style={{
+                width: 360,
+                background: "#fff",
+                padding: 32,
+                borderRadius: 16,
+                border: `1px solid ${colors.border}`,
+              }}
+            >
+              <h2 style={{ textAlign: "center" }}>Prontuário Psicológico</h2>
 
-        <button
-          style={{ ...primaryBtn, width: "100%", marginBottom: 12 }}
-          onClick={handleLogin}
-        >
-          Entrar
-        </button>
+              <input
+                style={inputStyle}
+                placeholder="Email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+              />
 
-        <button
-          style={{
-            background: "transparent",
-            border: "none",
-            color: colors.primary,
-            cursor: "pointer",
-            width: "100%"
-          }}
-          onClick={() => setScreen("esqueciSenha")}
-        >
-          Esqueci minha senha
-        </button>
-      </div>
-    </div>
-  );
-      case "esqueciSenha":
-        return (
-          <div className="center">
-            <h2>Recuperar senha</h2>
-            <input placeholder="Email" />
-            <button onClick={()=>setScreen("login")}>Enviar</button>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <input
+                  style={{ ...inputStyle, marginBottom: 0 }}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Senha"
+                  value={loginPass}
+                  onChange={(e) => setLoginPass(e.target.value)}
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ marginLeft: -40, cursor: "pointer" }}
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </span>
+              </div>
+
+              <button
+                style={{ ...primaryBtn, width: "100%", marginTop: 16 }}
+                onClick={handleLogin}
+              >
+                Entrar
+              </button>
+            </div>
           </div>
         );
 
@@ -258,33 +170,11 @@ export default function App() {
       case "menu":
         return layout(
           <>
-            <h1>Menu</h1>
+            <h1>Bem-vindo, {currentUser?.name}</h1>
 
-            <div className="top-cards">
-              <div onClick={()=>setScreen("pacientes")}>
-                Pacientes
-              </div>
-
-              <div onClick={()=>setScreen("consultasHoje")}>
-                Consultas do dia
-              </div>
-            </div>
-
-            <button onClick={()=>setScreen("novoUsuario")}>
-              Cadastrar usuário
+            <button onClick={() => setScreen("pacientes")}>
+              Ver pacientes
             </button>
-
-            <div className="actions">
-              <button onClick={()=>setScreen("novoAtendimento")}>
-                Novo atendimento
-              </button>
-              <button onClick={()=>setScreen("novoAgendamento")}>
-                Novo agendamento
-              </button>
-              <button onClick={()=>setScreen("novoPaciente")}>
-                Novo paciente
-              </button>
-            </div>
           </>
         );
 
@@ -292,8 +182,9 @@ export default function App() {
       case "pacientes":
         return layout(
           <>
-            <input placeholder="Buscar paciente" />
-            <div>Lista alfabética de pacientes</div>
+            <h2>Pacientes</h2>
+            <p>Lista de pacientes (mock)</p>
+            <button onClick={() => setScreen("menu")}>Voltar</button>
           </>
         );
 
@@ -301,86 +192,8 @@ export default function App() {
       case "agenda":
         return layout(
           <>
-            <button onClick={()=>setScreen("novoAgendamento")}>
-              Novo agendamento
-            </button>
-            <div>Agenda cronológica</div>
-          </>
-        );
-
-      /* ================= NOVO USUÁRIO ================= */
-      case "novoUsuario":
-        return layout(
-          <>
-            <h2>Novo usuário</h2>
-            <input placeholder="Nome" />
-            <input placeholder="Email" />
-            <input placeholder="CEP" />
-            <input placeholder="Rua" />
-            <input placeholder="Bairro" />
-            <input placeholder="Cidade" />
-            <input placeholder="Número" />
-            <input placeholder="Complemento" />
-            <button onClick={()=>setScreen("menu")}>Salvar</button>
-          </>
-        );
-
-      /* ================= NOVO PACIENTE ================= */
-      case "novoPaciente":
-        return layout(
-          <>
-            <h2>Novo paciente</h2>
-            <input placeholder="Nome" />
-            <input type="date" />
-            <input placeholder="Idade (auto)" disabled />
-            <select>
-              <option>PIX</option>
-              <option>Cartão</option>
-              <option>Boleto</option>
-            </select>
-            <input placeholder="Nome da mãe" />
-            <input placeholder="Nome do pai" />
-            <input placeholder="Escola (se menor)" />
-            <button>Salvar</button>
-          </>
-        );
-
-      /* ================= NOVO AGENDAMENTO ================= */
-      case "novoAgendamento":
-        return layout(
-          <>
-            <select>
-              <option>Paciente</option>
-            </select>
-            <input type="date" />
-            <input type="time" />
-            <button>Salvar</button>
-          </>
-        );
-
-      /* ================= NOVO ATENDIMENTO ================= */
-      case "novoAtendimento":
-        return layout(
-          <>
-            <select>
-              <option>Paciente</option>
-            </select>
-            <select>
-              <option>Consulta agendada</option>
-            </select>
-            <textarea />
-            <button>Salvar atendimento</button>
-          </>
-        );
-
-      /* ================= PRONTUÁRIO ================= */
-      case "prontuario":
-        return layout(
-          <>
-            <h2>Prontuário</h2>
-            <div>Histórico cronológico</div>
-            <button>Editar</button>
-            <button>Limpar prontuário</button>
+            <h2>Agenda</h2>
+            <p>Agenda vazia</p>
           </>
         );
 
@@ -388,5 +201,6 @@ export default function App() {
         return <div>Tela não encontrada</div>;
     }
   }
+
   return renderScreen();
 }
