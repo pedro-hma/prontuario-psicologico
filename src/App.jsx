@@ -315,28 +315,46 @@ export default function App() {
   return layout(
     <>
       <h2>Novo atendimento</h2>
-      <div style={card}>
+      <div style={{
+          ...card,
+          maxWidth: 700
+        }}
+      >
+        {/* PACIENTE */}
+        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}>Paciente</label>
         <select style={inputStyled} onChange={e => setPacienteSelecionado(e.target.value)}>
           <option value="">Selecione o paciente</option>
           {pacientes
-           .filter(p => p.owner === currentUser?.email)
+            .filter(p => p.owner === currentUser?.email)
             .map(p => (
-              <option key={p.id} value={p.id}>{p.nome}</option>
+              <option key={p.id} value={p.id}>
+                {p.nome}
+              </option>
             ))}
         </select>
-        <textarea id="texto"placeholder="Escreva o atendimento..."style={{ ...inputStyled, height: 160 }}/>
-        <button style={btnPrimary} onClick={() => {
-          const texto = document.getElementById("texto").value;
-          if (!texto) return alert("Texto obrigatório");
-          setProntuarios(prev => ({
-            ...prev,
-            [`${currentUser.email}_${pacienteSelecionado}`]: [
-              ...(prev[`${currentUser.email}_${pacienteSelecionado}`] || []),
-              { data: new Date().toISOString(), texto }
-            ]}));
-          setScreen("prontuario");
-        }}>Salvar atendimento
-        </button>
+        {/* TEXTO DO ATENDIMENTO */}
+        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}> Descrição do atendimento </label>
+        <textarea id="texto" placeholder="Escreva o atendimento..."style={{
+            ...inputStyled,
+            height: 180,
+            resize: "vertical"
+          }}
+        />
+        {/* BOTÃO */}
+        <div style={{ marginTop: 16, textAlign: "right" }}>
+          <button style={btnPrimary} onClick={() => {
+              const texto = document.getElementById("texto").value;
+              if (!texto) return alert("Texto obrigatório");
+              setProntuarios(prev => ({
+                ...prev,
+                [`${currentUser.email}_${pacienteSelecionado}`]: [
+                  ...(prev[`${currentUser.email}_${pacienteSelecionado}`] || []),
+                  { data: new Date().toISOString(), texto }
+                ]
+              }));
+              setScreen("prontuario");
+            }}>Salvar atendimento</button>
+        </div>
       </div>
     </>
   );
