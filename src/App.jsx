@@ -87,12 +87,18 @@ const btnDanger = dangerButton;
 /* ===================== COMPONENTES ===================== */
 function Sidebar({ setScreen }) {
   return (
-    <div style={{ width: 220, background: "#fff", padding: 16 }}>
-      <h3>Prontuário</h3>
-      <button onClick={() => setScreen("menu")}>Menu</button>
-      <button onClick={() => setScreen("pacientes")}>Pacientes</button>
-      <button onClick={() => setScreen("agenda")}>Agenda</button>
-    </div>
+    <div style={{
+    width: 220,
+    background: "#fff",
+    padding: 20,
+    borderRight: `1px solid ${colors.border}`
+  }}
+>
+  <h2 style={{ color: colors.primary }}>Prontuário</h2>
+  <button style={ghostButton} onClick={() => setScreen("menu")}>Menu</button>
+  <button style={ghostButton} onClick={() => setScreen("pacientes")}>Pacientes</button>
+  <button style={ghostButton} onClick={() => setScreen("agenda")}>Agenda</button>
+</div>
   );
 }
 
