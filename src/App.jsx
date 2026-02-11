@@ -19,31 +19,6 @@ const input = {
   border: `1px solid ${colors.border}`,
   marginBottom: 12,
 };
-
-/* ===================== DADOS MOCK ===================== */
-const pacientesMock = [
-  { id: 1, nome: "Ana Paula" },
-  { id: 2, nome: "Bruno Silva" },
-  { id: 3, nome: "Carlos Eduardo" },
-];
-
-const consultasMock = [
-  {
-    id: 1,
-    paciente: "Ana Paula",
-    data: "2026-02-10",
-    hora: "14:00",
-    status: "agendado",
-  },
-  {
-    id: 2,
-    paciente: "Bruno Silva",
-    data: "2026-02-10",
-    hora: "16:00",
-    status: "realizado",
-  },
-];
-
 /* ===================== COMPONENTES ===================== */
 function Sidebar({ setScreen }) {
   return (
