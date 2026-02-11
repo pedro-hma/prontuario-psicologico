@@ -1,5 +1,5 @@
-import React, { useState } from "react";
 import { FiEye, FiEyeOff, FiCalendar } from "react-icons/fi";
+import React, { useState, useEffect } from "react";
 
 /* ===================== ESTILO ===================== */
 const colors = {
@@ -102,6 +102,19 @@ export default function App() {
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
   const hoje = "2026-02-10";
+
+  useEffect(() => {
+  const userSalvo = localStorage.getItem("currentUser");
+  const usuariosSalvos = localStorage.getItem("usuarios");
+  if (usuariosSalvos) {
+    setUsuarios(JSON.parse(usuariosSalvos));
+  }
+  if (userSalvo) {
+    setCurrentUser(JSON.parse(userSalvo));
+    setScreen("menu");
+  }
+}, []);
+
   function layout(children) {
     return (
       <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
@@ -118,12 +131,12 @@ export default function App() {
   const user = usuarios.find(
     u => u.email === loginEmail && u.password === loginPass
   );
-
   if (!user) {
     alert("Email ou senha inválidos");
     return;
   }
- // setCurrentUser(user);
+  setCurrentUser(user);
+  localStorage.setItem("currentUser", JSON.stringify(user));
   setScreen("menu");
 }
   function cancelarConsulta(id) {
@@ -167,6 +180,7 @@ export default function App() {
             <strong>Consultas hoje:</strong>{" "}
             {consultas.filter((c) => c.data === hoje).length}
             <button onClick={() => setScreen("novoUsuario")} style={{ marginTop: 12 }}>Cadastrar usuário</button>
+            <button style={{ marginTop: 16, background: "#eee" }}onClick={() => {localStorage.removeItem("currentUser");setCurrentUser(null);setScreen("login");}}>Logout</button>
           </div>
           <h3>Ações rápidas</h3>
           <button onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
@@ -405,28 +419,28 @@ case "editarPaciente":
       <input id="emailUsuario" placeholder="Email" />
       <input id="senhaUsuario" type="password"placeholder="Senha"/>
       <button onClick={() => {
-          const nome = document.getElementById("nomeUsuario").value;
-          const email = document.getElementById("emailUsuario").value;
-          const senha = document.getElementById("senhaUsuario").value;
-          if (!nome || !email || !senha) {
-            alert("Preencha todos os campos");
-            return;
-          }
-          const existe = usuarios.find(u => u.email === email);
-          if (existe) {
-            alert("Já existe um usuário com esse email");
-            return;
-          }
-          setUsuarios(prev => [
-            ...prev,
-            { name: nome, email, password: senha }
-          ]);
-          alert("Usuário cadastrado com sucesso!");
-          setScreen("menu");
-        }}
-      >
-        Salvar usuário
-      </button>
+        const nome = document.getElementById("nomeUsuario").value;
+        const email = document.getElementById("emailUsuario").value;
+        const senha = document.getElementById("senhaUsuario").value;
+  if (!nome || !email || !senha) {
+    alert("Preencha todos os campos");
+    return;
+  }
+  if (usuarios.find(u => u.email === email)) {
+    alert("Já existe um usuário com esse email");
+    return;
+  }
+  const novosUsuarios = [
+    ...usuarios,
+    { name: nome, email, password: senha }
+  ];
+  setUsuarios(novosUsuarios);
+  localStorage.setItem("usuarios", JSON.stringify(novosUsuarios));
+  alert("Usuário cadastrado com sucesso!");
+  setScreen("menu");
+}}>
+  Salvar usuário
+</button>
       <br /><br />
       <button onClick={() => setScreen("menu")}>
         ← Voltar
