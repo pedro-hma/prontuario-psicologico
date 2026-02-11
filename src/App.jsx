@@ -67,6 +67,23 @@ const input = {
   border: `1px solid ${colors.border}`,
   marginBottom: 12,
 };
+const pageHeader = {
+  display: "flex",
+  alignItems: "center",
+  gap: 12,
+  marginBottom: 16
+};
+
+const listActions = {
+  display: "flex",
+  gap: 8,
+  marginTop: 12,
+  flexWrap: "wrap"
+};
+
+const btnPrimary = primaryButton;
+const btnGhost = ghostButton;
+const btnDanger = dangerButton;
 /* ===================== COMPONENTES ===================== */
 function Sidebar({ setScreen }) {
   return (
@@ -172,9 +189,9 @@ export default function App() {
   }
 
   /* ===================== TELAS ===================== */
-  if (!currentUser) {
+  if (!currentUser && screen !== "login") {
   return (
-    <div style={{ inHeight: "100vh", display: "flex",alignItems: "center",justifyContent: "center"}}>
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <h2>Carregando...</h2>
     </div>
   );
@@ -203,9 +220,7 @@ export default function App() {
     /* ================= MENU ================= */
     case "menu":
   const pacientesDoUsuario = pacientes.filter(p => p.owner === currentUser?.email)
-  const consultasHoje = consultas.filter(
-    c => c.owner === currentUser.email && c.data === hoje
-  );
+  const consultasHoje = consultas.filter(c => c.owner === currentUser?.email && c.data === hoje);
   return layout(
     <>
       <h1>Menu</h1>
