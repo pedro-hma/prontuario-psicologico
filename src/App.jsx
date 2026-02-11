@@ -200,6 +200,7 @@ export default function App() {
             onChange={(e) => setBusca(e.target.value)}
           />
           {pacientes
+  .filter(p => p.owner === currentUser.email)
   .filter(p =>
     p.nome.toLowerCase().includes(busca.toLowerCase())
   )
@@ -217,14 +218,19 @@ export default function App() {
       <strong>{p.nome}</strong>
       <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
         {/* DADOS */}
-        <button onClick={() => {setPacienteSelecionado(p);setScreen("dadosPaciente");}}>Dados </button>
+        <button onClick={() => {setPacienteSelecionado(p);setScreen("dadosPaciente");}}>Dados</button>
         {/* EDITAR */}
         <button onClick={() => {setPacienteSelecionado(p);setScreen("editarPaciente");}}>Editar</button>
         {/* PRONTUÁRIO */}
         <button onClick={() => {setPacienteSelecionado(p);setScreen("prontuario");}}>Prontuário</button>
         {/* REMOVER */}
-        <button onClick={() => {if (!window.confirm("Deseja remover este paciente?")) return;
-            setPacientes(prev => prev.filter(x => x.id !== p.id));}}>Remover</button>
+        <button onClick={() => {
+            if (!window.confirm("Deseja remover este paciente?")) return;
+            setPacientes(prev =>
+              prev.filter(x => x.id !== p.id)
+            );
+          }}
+        >Remover</button>
       </div>
     </div>
   ))}
@@ -242,19 +248,24 @@ export default function App() {
           <button onClick={() => setScreen("novoAgendamento")}>
             Novo agendamento
           </button>
-          {consultas
-            .sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
-            .map((c) => (
-              <div key={c.id} style={{ background: "#fff", padding: 12, marginBottom: 8 }}>
-                <strong>{c.paciente}</strong> – {c.data} {c.hora}
-                <Status status={c.status} />
-                {c.status === "agendado" && (
-                  <button onClick={() => cancelarConsulta(c.id)}>
-                    Cancelar
-                  </button>
-                )}
-              </div>
-            ))}
+          {consultas 
+          .filter(c => c.owner === currentUser.email)
+          .sort((a, b) =>`${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
+  .map(c => (
+  <div key={c.id} style={{
+        background: "#fff",
+        padding: 12,
+        marginBottom: 8,
+        borderRadius: 8
+      }}
+    >
+      <strong>{c.paciente}</strong> – {c.data} {c.hora}{" "}
+      <Status status={c.status} />
+      {c.status === "agendado" && (
+        <button style={{ marginLeft: 8 }}onClick={() => cancelarConsulta(c.id)}>Cancelar</button>
+      )}
+    </div>
+  ))}
         </>
       );
       case "novoAgendamento":
@@ -282,15 +293,15 @@ export default function App() {
           return;
         }
         setConsultas(prev => [
-          ...prev,
-          {
+          ...prev,{
             id: Date.now(),
             paciente,
             data,
             hora,
-            status: "agendado"
-          }
-        ]);
+            status: "agendado",
+            owner: currentUser.email // 🔑
+            }
+]);
         setScreen("agenda");
       }}>
         Salvar
@@ -349,15 +360,14 @@ case "editarPaciente":
         <option>PIX</option>
         <option>Cartão</option>
         <option>Boleto</option>
-      </select>
-
-      <button onClick={() => {
+      </select> <button onClick={() => {
         const novo = {
-          id: pacienteSelecionado?.id || Date.now(),
-          nome: document.getElementById("nome").value,
-          cpf: document.getElementById("cpf").value,
-        };
-
+  id: pacienteSelecionado?.id || Date.now(),
+  nome,
+  cpf,
+  pagamento,
+  owner: currentUser.email, // 🔑 DONO DO PACIENTE
+};
         setPacientes(prev =>
           screen === "novoPaciente"
             ? [...prev, novo]
