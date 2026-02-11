@@ -151,13 +151,18 @@ export default function App() {
 
     /* ================= MENU ================= */
     case "menu":
+      const pacientesDoUsuario = pacientes.filter(
+  p => p.owner === currentUser.email
+);
+const consultasHoje = consultas.filter(
+  c => c.owner === currentUser.email && c.data === hoje
+);
       return layout(
         <>
           <h1>Menu</h1>
           <div>
-            <strong>Pacientes:</strong> {pacientes.length} <br />
+           <strong>Pacientes:</strong> {pacientesDoUsuario.length}
             <strong>Consultas hoje:</strong>{" "}
-            {consultas.filter((c) => c.data === hoje).length}
             <button onClick={() => setScreen("novoUsuario")} style={{ marginTop: 12 }}>Cadastrar usuário</button>
             <button style={{ marginTop: 16, background: "#eee" }}onClick={() => {localStorage.removeItem("currentUser");setCurrentUser(null);setScreen("login");}}>Logout</button>
           </div>
