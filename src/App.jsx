@@ -68,7 +68,7 @@ export default function App() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPass, setLoginPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [pacientes, setPacientes] = useState(pacientesMock);
+  const [pacientes, setPacientes] = useState([]);
   const [consultas, setConsultas] = useState(consultasMock);
   const [busca, setBusca] = useState("");
   const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
@@ -336,12 +336,12 @@ case "editarPaciente":
         <option>Cartão</option>
         <option>Boleto</option>
       </select> <button onClick={() => {
-        const novo = {
-  id: pacienteSelecionado?.id || Date.now(),
-  nome,
-  cpf,
-  pagamento,
-  owner: currentUser.email, // 🔑 DONO DO PACIENTE
+          const novo = {
+            id: pacienteSelecionado?.id || Date.now(),
+            nome: document.getElementById("nome").value,
+            cpf: document.getElementById("cpf").value,
+            pagamento: document.getElementById("pagamento").value,
+            owner: currentUser.email // 🔑 ESSENCIAL
 };
         setPacientes(prev =>
           screen === "novoPaciente"
