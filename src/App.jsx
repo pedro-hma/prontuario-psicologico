@@ -69,7 +69,7 @@ export default function App() {
   const [loginPass, setLoginPass] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [pacientes, setPacientes] = useState([]);
-  const [consultas, setConsultas] = useState(consultasMock);
+  const [consultas, setConsultas] = useState([]);
   const [busca, setBusca] = useState("");
   const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
   const [prontuarios, setProntuarios] = useState({});
@@ -124,6 +124,10 @@ export default function App() {
   }
 
   /* ===================== TELAS ===================== */
+  if (!currentUser && screen !== "login") {
+  setScreen("login");
+  return null;
+}
   switch (screen) {
     case "login":
       return (
@@ -348,7 +352,6 @@ case "editarPaciente":
             ? [...prev, novo]
             : prev.map(p => p.id === novo.id ? novo : p)
         );
-
         setScreen("pacientes");
       }}>
         Salvar
