@@ -489,6 +489,71 @@ case "editarPaciente":
       <button style={btnGhost} onClick={() => setScreen("menu")}>← Voltar</button>
     </>
   );
+  case "novoAgendamento":
+  return layout(
+    <>
+      <h2>Novo agendamento</h2>
+      <div
+        style={{
+          ...card,
+          maxWidth: 600
+        }}>
+        {/* PACIENTE */}
+        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}> Paciente </label>
+        <select id="paciente" style={inputStyled}>
+          {pacientes
+            .filter(p => p.owner === currentUser?.email)
+            .map(p => (
+              <option key={p.id} value={p.nome}>
+                {p.nome}
+              </option>
+            ))}
+        </select>
+        {/* DATA */}
+        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}> Data</label>
+        <input type="date" id="data" style={inputStyled} />
+        {/* HORA */}
+        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}> Horário</label>
+        <input type="time" id="hora" style={inputStyled} />
+        {/* BOTÃO */}
+        <div style={{ marginTop: 16, textAlign: "right" }}>
+          <button style={btnPrimary} onClick={() => {
+              const paciente = document.getElementById("paciente").value;
+              const data = document.getElementById("data").value;
+              const hora = document.getElementById("hora").value;
+              if (!paciente || !data || !hora) {
+                alert("Preencha todos os campos");
+                return;
+              }
+              const conflito = consultas.find(
+                c =>
+                  c.owner === currentUser.email &&
+                  c.data === data &&
+                  c.hora === hora &&
+                  c.status !== "cancelado"
+              );
+              if (conflito) {
+                alert("Já existe consulta nesse horário");
+                return;
+              }
+              setConsultas(prev => [
+                ...prev,
+                {
+                  id: Date.now(),
+                  paciente,
+                  data,
+                  hora,
+                  status: "agendado",
+                  owner: currentUser.email
+                }
+              ]);
+              setScreen("agenda");
+            }}>Salvar agendamento
+          </button>
+        </div>
+      </div>
+    </>
+  );
     default:
       return <div>Tela em construção</div>;
   }
