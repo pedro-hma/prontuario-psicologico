@@ -11,6 +11,54 @@ const colors = {
   warning: "#f1c40f",
   success: "#2ecc71",
 };
+const container = {
+  background: colors.bg,
+  minHeight: "100vh",
+  padding: 24
+};
+
+const card = {
+  background: "#fff",
+  borderRadius: 12,
+  padding: 16,
+  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+  marginBottom: 16
+};
+
+const button = {
+  padding: "10px 14px",
+  borderRadius: 8,
+  border: "none",
+  cursor: "pointer",
+  fontWeight: 500
+};
+
+const primaryButton = {
+  ...button,
+  background: colors.primary,
+  color: "#fff"
+};
+
+const dangerButton = {
+  ...button,
+  background: colors.danger,
+  color: "#fff"
+};
+
+const ghostButton = {
+  ...button,
+  background: "#f4f6f6",
+  color: colors.text
+};
+
+const inputStyled = {
+  width: "100%",
+  padding: 10,
+  borderRadius: 8,
+  border: `1px solid ${colors.border}`,
+  marginBottom: 12,
+  fontSize: 14
+};
 
 const input = {
   width: "100%",
@@ -151,177 +199,121 @@ export default function App() {
 
     /* ================= MENU ================= */
     case "menu":
-      const pacientesDoUsuario = pacientes.filter(
-  p => p.owner === currentUser.email
-);
-const consultasHoje = consultas.filter(
-  c => c.owner === currentUser.email && c.data === hoje
-);
-      return layout(
-        <>
-          <h1>Menu</h1>
-          <div>
-           <strong>Pacientes:</strong> {pacientesDoUsuario.length}
-            <strong>Consultas hoje:</strong>{" "}
-            <button onClick={() => setScreen("novoUsuario")} style={{ marginTop: 12 }}>Cadastrar usuário</button>
-            <button style={{ marginTop: 16, background: "#eee" }}onClick={() => {localStorage.removeItem("currentUser");setCurrentUser(null);setScreen("login");}}>Logout</button>
-          </div>
-          <h3>Ações rápidas</h3>
-          <button onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
-          <button onClick={() => setScreen("novoAtendimento")}>Novo atendimento</button>
-          <button onClick={() => setScreen("novoPaciente")}>Novo paciente</button>
-        </>
-      );
-
-    /* ================= PACIENTES ================= */
-    case "pacientes":
-      return layout(
-        <>
-          <button onClick={() => setScreen("menu")}>← Voltar</button>
-          <input
-            style={input}
-            placeholder="Buscar paciente"
-            onChange={(e) => setBusca(e.target.value)}
-          />
-          {pacientes
-  .filter(p => p.owner === currentUser.email)
-  .filter(p =>
-    p.nome.toLowerCase().includes(busca.toLowerCase())
-  )
-  .sort((a, b) => a.nome.localeCompare(b.nome))
-  .map(p => (
-    <div
-      key={p.id}
-      style={{
-        background: "#fff",
-        padding: 12,
-        marginBottom: 8,
-        borderRadius: 8
-      }}
-    >
-      <strong>{p.nome}</strong>
-      <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
-        {/* DADOS */}
-        <button onClick={() => {setPacienteSelecionado(p);setScreen("dadosPaciente");}}>Dados</button>
-        {/* EDITAR */}
-        <button onClick={() => {setPacienteSelecionado(p);setScreen("editarPaciente");}}>Editar</button>
-        {/* PRONTUÁRIO */}
-        <button onClick={() => {setPacienteSelecionado(p);setScreen("prontuario");}}>Prontuário</button>
-        {/* REMOVER */}
-        <button onClick={() => {
-            if (!window.confirm("Deseja remover este paciente?")) return;
-            setPacientes(prev =>
-              prev.filter(x => x.id !== p.id)
-            );
-          }}
-        >Remover</button>
-      </div>
-    </div>
-  ))}
-        </>
-      );
-
-    /* ================= AGENDA ================= */
-    case "agenda":
-      return layout(
-        <>
-          <button onClick={() => setScreen("menu")}>← Voltar</button>
-          <h2>
-            <FiCalendar /> Agenda
-          </h2>
-          <button onClick={() => setScreen("novoAgendamento")}>
-            Novo agendamento
-          </button>
-          {consultas 
-          .filter(c => c.owner === currentUser.email)
-          .sort((a, b) =>`${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
-  .map(c => (
-  <div key={c.id} style={{
-        background: "#fff",
-        padding: 12,
-        marginBottom: 8,
-        borderRadius: 8
-      }}
-    >
-      <strong>{c.paciente}</strong> – {c.data} {c.hora}{" "}
-      <Status status={c.status} />
-      {c.status === "agendado" && (
-        <button style={{ marginLeft: 8 }}onClick={() => cancelarConsulta(c.id)}>Cancelar</button>
-      )}
-    </div>
-  ))}
-        </>
-      );
-      case "novoAgendamento":
+  const pacientesDoUsuario = pacientes.filter(p => p.owner === currentUser.email);
+  const consultasHoje = consultas.filter(
+    c => c.owner === currentUser.email && c.data === hoje
+  );
   return layout(
     <>
-      <h2>Novo agendamento</h2>
-      <select id="paciente">
-        {pacientes.map(p => (
-          <option key={p.id} value={p.nome}>{p.nome}</option>
+      <h1>Menu</h1>
+      <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
+        <div style={{ ...card, flex: 1 }}>
+          <h3>Pacientes</h3>
+          <strong style={{ fontSize: 32 }}>{pacientesDoUsuario.length}</strong>
+          </div>
+        <div style={{ ...card, flex: 1 }}>
+          <h3>Consultas hoje</h3>
+          <strong style={{ fontSize: 32 }}>{consultasHoje.length}</strong>
+        </div>
+        </div>
+        <div style={card}>
+        <h3>Ações rápidas</h3>
+        <div style={listActions}>
+          <button style={btnPrimary} onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
+          <button style={btnGhost} onClick={() => setScreen("novoAtendimento")}>Novo atendimento</button>
+          <button style={btnGhost} onClick={() => setScreen("novoPaciente")}>Novo paciente</button>
+        </div>
+        </div>
+      <div style={card}>
+        <button style={btnGhost} onClick={() => setScreen("novoUsuario")}>Cadastrar usuário</button>
+        <button style={{ ...btnDanger, marginLeft: 12 }} onClick={() => {localStorage.removeItem("currentUser");setCurrentUser(null);setScreen("login");}}>Logout</button>
+      </div>
+    </>
+  );
+    /* ================= PACIENTES ================= */
+    case "pacientes":
+  return layout(
+    <>
+      <div style={pageHeader}>
+        <button style={btnGhost} onClick={() => setScreen("menu")}>← Voltar</button>
+        <input
+          style={inputStyled}
+          placeholder="Buscar paciente"
+          onChange={(e) => setBusca(e.target.value)}
+        />
+      </div>
+
+      {pacientes
+        .filter(p => p.owner === currentUser.email)
+        .filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()))
+        .sort((a, b) => a.nome.localeCompare(b.nome))
+        .map(p => (
+          <div key={p.id} style={card}>
+            <strong>{p.nome}</strong>
+
+            <div style={listActions}>
+              <button style={btnGhost} onClick={() => { setPacienteSelecionado(p); setScreen("dadosPaciente"); }}>Dados</button>
+              <button style={btnGhost} onClick={() => { setPacienteSelecionado(p); setScreen("editarPaciente"); }}>Editar</button>
+              <button style={btnPrimary} onClick={() => { setPacienteSelecionado(p); setScreen("prontuario"); }}>Prontuário</button>
+              <button style={btnDanger}onClick={() => {
+                if (!window.confirm("Deseja remover este paciente?")) return;
+                  setPacientes(prev => prev.filter(x => x.id !== p.id));
+                }}>Remover</button>
+            </div>
+          </div>
         ))}
-      </select>
-      <input type="date" id="data" />
-      <input type="time" id="hora" />
-      <button onClick={() => {
-        const paciente = document.getElementById("paciente").value;
-        const data = document.getElementById("data").value;
-        const hora = document.getElementById("hora").value;
-        const conflito = consultas.find(c =>
-          c.data === data &&
-          c.hora === hora &&
-          c.status !== "cancelado"
-        );
-        if (conflito) {
-          alert("Já existe consulta nesse horário");
-          return;
-        }
-        setConsultas(prev => [
-          ...prev,{
-            id: Date.now(),
-            paciente,
-            data,
-            hora,
-            status: "agendado",
-            owner: currentUser.email // 🔑
-            }
-]);
-        setScreen("agenda");
-      }}>
-        Salvar
-      </button>
+    </>
+  );
+    /* ================= AGENDA ================= */
+    case "agenda":
+  return layout(
+    <>
+      <div style={pageHeader}>
+        <button style={btnGhost} onClick={() => setScreen("menu")}>← Voltar</button>
+        <h2><FiCalendar /> Agenda</h2>
+      </div>
+      <button style={btnPrimary} onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
+      {consultas
+        .filter(c => c.owner === currentUser.email)
+        .sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
+        .map(c => (
+          <div key={c.id} style={card}>
+            <strong>{c.paciente}</strong> – {c.data} {c.hora}
+            <Status status={c.status} />
+            {c.status === "agendado" && (
+              <button style={{ ...btnDanger, marginLeft: 12 }}onClick={() => cancelarConsulta(c.id)}>Cancelar</button>
+            )}
+          </div>
+        ))}
     </>
   );
   case "novoAtendimento":
   return layout(
     <>
       <h2>Novo atendimento</h2>
-      <select onChange={e => setPacienteSelecionado(e.target.value)}>
-        <option value="">Selecione o paciente</option>
-        {pacientes.map(p => (
-          <option key={p.id} value={p.id}>{p.nome}</option>
-        ))}
-      </select>
-      <textarea
-        id="texto"
-        placeholder="Escreva o atendimento..."
-        style={{ width: "100%", height: 200 }}
-      />
-      <button onClick={() => {
-        const texto = document.getElementById("texto").value;
-        if (!texto) return alert("Texto obrigatório");
-
-        setProntuarios(prev => ({
-          ...prev,
-          [pacienteSelecionado]: [
-            ...(prev[pacienteSelecionado] || []),
-            { data: new Date().toISOString(), texto }
-          ]
-        }));
-        setScreen("prontuario");
-      }}>
-        Salvar atendimento
-      </button>
+      <div style={card}>
+        <select style={inputStyled} onChange={e => setPacienteSelecionado(e.target.value)}>
+          <option value="">Selecione o paciente</option>
+          {pacientes
+            .filter(p => p.owner === currentUser.email)
+            .map(p => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+        </select>
+        <textarea id="texto"placeholder="Escreva o atendimento..."style={{ ...inputStyled, height: 160 }}/>
+        <button style={btnPrimary} onClick={() => {
+          const texto = document.getElementById("texto").value;
+          if (!texto) return alert("Texto obrigatório");
+          setProntuarios(prev => ({
+            ...prev,
+            [`${currentUser.email}_${pacienteSelecionado}`]: [
+              ...(prev[`${currentUser.email}_${pacienteSelecionado}`] || []),
+              { data: new Date().toISOString(), texto }
+            ]}));
+          setScreen("prontuario");
+        }}>Salvar atendimento
+        </button>
+      </div>
     </>
   );
   case "novoPaciente":
@@ -329,66 +321,81 @@ case "editarPaciente":
   return layout(
     <>
       <h2>{screen === "novoPaciente" ? "Novo paciente" : "Editar paciente"}</h2>
-      <input id="nome" placeholder="Nome" defaultValue={pacienteSelecionado?.nome || ""} />
-      <input id="cpf" placeholder="CPF" defaultValue={pacienteSelecionado?.cpf || ""} />
-      <input
-        type="date"
-        id="nasc"
-        onChange={e =>
-          document.getElementById("idade").value = calcularIdade(e.target.value)
-        }
-      />
-      <input id="idade" placeholder="Idade" disabled />
-
-      <select id="pagamento">
-        <option>PIX</option>
-        <option>Cartão</option>
-        <option>Boleto</option>
-      </select> <button onClick={() => {
+      <div style={card}>
+        <input style={inputStyled} id="nome" placeholder="Nome" defaultValue={pacienteSelecionado?.nome || ""} />
+        <input style={inputStyled} id="cpf" placeholder="CPF" defaultValue={pacienteSelecionado?.cpf || ""} />
+        <input style={inputStyled} type="date"id="nasc"onChange={e => document.getElementById("idade").value = calcularIdade(e.target.value)}/>
+        <input style={inputStyled} id="idade" placeholder="Idade" disabled />
+        <select style={inputStyled} id="pagamento">
+          <option>PIX</option>
+          <option>Cartão</option>
+          <option>Boleto</option>
+        </select>
+        <button style={btnPrimary} onClick={() => {
           const novo = {
             id: pacienteSelecionado?.id || Date.now(),
             nome: document.getElementById("nome").value,
             cpf: document.getElementById("cpf").value,
             pagamento: document.getElementById("pagamento").value,
-            owner: currentUser.email // 🔑 ESSENCIAL
-};
-        setPacientes(prev =>
-          screen === "novoPaciente"
-            ? [...prev, novo]
-            : prev.map(p => p.id === novo.id ? novo : p)
-        );
-        setScreen("pacientes");
-      }}>
-        Salvar
-      </button>
+            owner: currentUser.email
+          };
+          setPacientes(prev =>
+            screen === "novoPaciente"
+              ? [...prev, novo]
+              : prev.map(p => p.id === novo.id ? novo : p)
+          );
+          setScreen("pacientes");
+        }}>Salvar</button>
+      </div>
     </>
   );
   case "prontuario":
   if (!pacienteSelecionado) return null;
-  const lista = prontuarios[pacienteSelecionado.id] || [];
+
+  const chave = `${currentUser.email}_${pacienteSelecionado.id}`;
+  const lista = prontuarios[chave] || [];
+
   return layout(
     <>
       <h2>Prontuário – {pacienteSelecionado.nome}</h2>
-      {lista.length === 0 && <p>Sem registros.</p>}
+
+      {lista.length === 0 && (
+        <div style={card}>
+          <p style={{ color: "#777" }}>Nenhum atendimento registrado.</p>
+        </div>
+      )}
+
       {lista
         .sort((a, b) => new Date(a.data) - new Date(b.data))
         .map((item, index) => (
-          <div key={index} style={{ marginBottom: 12 }}>
-            <strong>{new Date(item.data).toLocaleDateString()}</strong>
-            <p>{item.texto}</p>
+          <div key={index} style={card}>
+            <strong>
+              {new Date(item.data).toLocaleDateString()}
+            </strong>
+            <p style={{ marginTop: 8 }}>{item.texto}</p>
           </div>
         ))}
-      <button
-        onClick={() => {
-          if (!window.confirm("Deseja limpar todo o prontuário?")) return;
-          setProntuarios(prev => ({
-            ...prev,
-            [pacienteSelecionado.id]: []
-          }));
-        }}
-      >Limpar prontuário</button>
-      <br /><br />
-      <button onClick={() => setScreen("pacientes")}> ← Voltar</button>
+
+      {/* AÇÕES FINAIS */}
+      <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
+        <button
+          style={btnGhost}
+          onClick={() => setScreen("novoAtendimento")}
+        >
+          Editar
+        </button>
+
+        <button style={btnDanger}onClick={() => {
+           if (!window.confirm("Tem certeza que deseja apagar TODO o prontuário deste paciente?"))
+              return;
+            setProntuarios(prev => ({
+              ...prev,
+              [chave]: []
+            }));
+          }}>Limpar prontuário</button>
+      </div>
+      <br />
+      <button style={btnGhost} onClick={() => setScreen("pacientes")}>← Voltar</button>
     </>
   );
   case "dadosPaciente":
@@ -396,48 +403,48 @@ case "editarPaciente":
   return layout(
     <>
       <h2>Dados do paciente</h2>
-
-      <p><strong>Nome:</strong> {pacienteSelecionado.nome}</p>
-      <p><strong>CPF:</strong> {pacienteSelecionado.cpf}</p>
-      <p><strong>Forma de pagamento:</strong> {pacienteSelecionado.pagamento}</p>
-
-      <button onClick={() => setScreen("pacientes")}> ← Voltar</button>
+      <div style={card}>
+        <p><strong>Nome:</strong> {pacienteSelecionado.nome}</p>
+        <p><strong>CPF:</strong> {pacienteSelecionado.cpf}</p>
+        <p><strong>Forma de pagamento:</strong>{" "}{pacienteSelecionado.pagamento}</p>
+        </div>
+      <button style={btnGhost} onClick={() => setScreen("pacientes")}>← Voltar</button>
     </>
   );
   case "novoUsuario":
   return layout(
     <>
       <h2>Novo usuário</h2>
-      <input id="nomeUsuario" placeholder="Nome" />
-      <input id="emailUsuario" placeholder="Email" />
-      <input id="senhaUsuario" type="password"placeholder="Senha"/>
-      <button onClick={() => {
-        const nome = document.getElementById("nomeUsuario").value;
-        const email = document.getElementById("emailUsuario").value;
-        const senha = document.getElementById("senhaUsuario").value;
-  if (!nome || !email || !senha) {
-    alert("Preencha todos os campos");
-    return;
-  }
-  if (usuarios.find(u => u.email === email)) {
-    alert("Já existe um usuário com esse email");
-    return;
-  }
-  const novosUsuarios = [
-    ...usuarios,
-    { name: nome, email, password: senha }
-  ];
-  setUsuarios(novosUsuarios);
-  localStorage.setItem("usuarios", JSON.stringify(novosUsuarios));
-  alert("Usuário cadastrado com sucesso!");
-  setScreen("menu");
-}}>
-  Salvar usuário
-</button>
-      <br /><br />
-      <button onClick={() => setScreen("menu")}>
-        ← Voltar
-      </button>
+      <div style={card}>
+        <input style={inputStyled} id="nomeUsuario"placeholder="Nome"/>
+        <input style={inputStyled} id="emailUsuario"placeholder="Email"/>
+        <input style={inputStyled} id="senhaUsuario"type="password"placeholder="Senha"/>
+        <button style={btnPrimary}onClick={() => {
+            const nome = document.getElementById("nomeUsuario").value;
+            const email = document.getElementById("emailUsuario").value;
+            const senha = document.getElementById("senhaUsuario").value;
+            if (!nome || !email || !senha) {
+              alert("Preencha todos os campos");
+              return;
+            }
+            if (usuarios.find(u => u.email === email)) {
+              alert("Já existe um usuário com esse email");
+              return;
+            }
+            const novosUsuarios = [
+              ...usuarios,
+              { name: nome, email, password: senha }
+            ];
+            setUsuarios(novosUsuarios);
+            localStorage.setItem(
+              "usuarios",
+              JSON.stringify(novosUsuarios)
+            );
+            alert("Usuário cadastrado com sucesso!");
+            setScreen("menu");
+          }}>Salvar usuário</button>
+      </div>
+      <button style={btnGhost} onClick={() => setScreen("menu")}>← Voltar</button>
     </>
   );
     default:
