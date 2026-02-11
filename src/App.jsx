@@ -172,9 +172,12 @@ export default function App() {
   }
 
   /* ===================== TELAS ===================== */
-  if (!currentUser && screen !== "login") {
-  setScreen("login");
-  return null;
+  if (!currentUser) {
+  return (
+    <div style={{ inHeight: "100vh", display: "flex",alignItems: "center",justifyContent: "center"}}>
+      <h2>Carregando...</h2>
+    </div>
+  );
 }
   switch (screen) {
     case "login":
