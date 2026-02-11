@@ -125,19 +125,19 @@ export default function App() {
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
   const hoje = "2026-02-10";
-
   useEffect(() => {
-  const userSalvo = localStorage.getItem("currentUser");
   const usuariosSalvos = localStorage.getItem("usuarios");
+  const userSalvo = localStorage.getItem("currentUser");
   if (usuariosSalvos) {
     setUsuarios(JSON.parse(usuariosSalvos));
   }
   if (userSalvo) {
     setCurrentUser(JSON.parse(userSalvo));
     setScreen("menu");
+  } else {
+    setScreen("login");
   }
 }, []);
-
   function layout(children) {
     return (
       <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
@@ -202,7 +202,7 @@ export default function App() {
 
     /* ================= MENU ================= */
     case "menu":
-  const pacientesDoUsuario = pacientes.filter(p => p.owner === currentUser.email);
+  const pacientesDoUsuario = pacientes.filter(p => p.owner === currentUser?.email)
   const consultasHoje = consultas.filter(
     c => c.owner === currentUser.email && c.data === hoje
   );
@@ -247,7 +247,7 @@ export default function App() {
       </div>
 
       {pacientes
-        .filter(p => p.owner === currentUser.email)
+       .filter(p => p.owner === currentUser?.email)
         .filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()))
         .sort((a, b) => a.nome.localeCompare(b.nome))
         .map(p => (
@@ -277,7 +277,7 @@ export default function App() {
       </div>
       <button style={btnPrimary} onClick={() => setScreen("novoAgendamento")}>Novo agendamento</button>
       {consultas
-        .filter(c => c.owner === currentUser.email)
+      .filter(c => c.owner === currentUser?.email)
         .sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
         .map(c => (
           <div key={c.id} style={card}>
@@ -298,7 +298,7 @@ export default function App() {
         <select style={inputStyled} onChange={e => setPacienteSelecionado(e.target.value)}>
           <option value="">Selecione o paciente</option>
           {pacientes
-            .filter(p => p.owner === currentUser.email)
+           .filter(p => p.owner === currentUser?.email)
             .map(p => (
               <option key={p.id} value={p.id}>{p.nome}</option>
             ))}
