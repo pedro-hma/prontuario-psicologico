@@ -353,7 +353,8 @@ useEffect(() => {
       >
         {/* PACIENTE */}
         <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}>Paciente</label>
-        <select style={inputStyled} onChange={e => setPacienteSelecionado(e.target.value)}>
+        <select onChange={e => {
+          const paciente = pacientes.find(p => p.id === Number(e.target.value));setPacienteSelecionado(paciente);}}>
           <option value="">Selecione o paciente</option>
           {pacientes
             .filter(p => p.owner === currentUser?.email)
@@ -378,7 +379,7 @@ useEffect(() => {
               if (!texto) return alert("Texto obrigatório");
               setProntuarios(prev => ({
                 ...prev,
-                [`${currentUser.email}_${pacienteSelecionado}`]: [
+                [`${currentUser.email}_${pacienteSelecionado.id}`]: [
                   ...(prev[`${currentUser.email}_${pacienteSelecionado}`] || []),
                   { data: new Date().toISOString(), texto }
                 ]
