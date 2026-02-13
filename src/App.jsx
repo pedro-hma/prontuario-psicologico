@@ -374,18 +374,21 @@ useEffect(() => {
         />
         {/* BOTÃO */}
         <div style={{ marginTop: 16, textAlign: "right" }}>
-          <button style={btnPrimary} onClick={() => {
-              const texto = document.getElementById("texto").value;
-              if (!texto) return alert("Texto obrigatório");
-              setProntuarios(prev => ({
-                ...prev,
-                [`${currentUser.email}_${pacienteSelecionado.id}`]: [
-                  ...(prev[`${currentUser.email}_${pacienteSelecionado}`] || []),
-                  { data: new Date().toISOString(), texto }
-                ]
-              }));
-              setScreen("prontuario");
-            }}>Salvar atendimento</button>
+          <button style={btnPrimary}onClick={() => {
+    const texto = document.getElementById("texto").value;
+    if (!texto) return alert("Texto obrigatório");
+    if (!pacienteSelecionado) return alert("Selecione um paciente");
+    const chave = `${currentUser.email}_${pacienteSelecionado.id}`;
+    setProntuarios(prev => ({
+      ...prev,
+      [chave]: [
+        ...(prev[chave] || []),
+        { data: new Date().toISOString(), texto }
+      ]
+    }));
+    setScreen("prontuario");
+  }}
+> Salvar atendimento</button>
         </div>
       </div>
     </>
