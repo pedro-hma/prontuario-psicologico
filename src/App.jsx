@@ -168,12 +168,16 @@ export default function App() {
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
  const hoje = new Date().toISOString().split("T")[0];
-  useEffect(() => {
+ useEffect(() => {
   const usuariosSalvos = localStorage.getItem("usuarios");
   const userSalvo = localStorage.getItem("currentUser");
-  if (usuariosSalvos) {
-    setUsuarios(JSON.parse(usuariosSalvos));
-  }
+  const pacientesSalvos = localStorage.getItem("pacientes");
+  const consultasSalvas = localStorage.getItem("consultas");
+  const prontuariosSalvos = localStorage.getItem("prontuarios");
+  if (usuariosSalvos) setUsuarios(JSON.parse(usuariosSalvos));
+  if (pacientesSalvos) setPacientes(JSON.parse(pacientesSalvos));
+  if (consultasSalvas) setConsultas(JSON.parse(consultasSalvas));
+  if (prontuariosSalvos) setProntuarios(JSON.parse(prontuariosSalvos));
   if (userSalvo) {
     setCurrentUser(JSON.parse(userSalvo));
     setScreen("menu");
@@ -181,6 +185,19 @@ export default function App() {
     setScreen("login");
   }
 }, []);
+
+useEffect(() => {
+  localStorage.setItem("pacientes", JSON.stringify(pacientes));
+}, [pacientes]);
+
+useEffect(() => {
+  localStorage.setItem("consultas", JSON.stringify(consultas));
+}, [consultas]);
+
+useEffect(() => {
+  localStorage.setItem("prontuarios", JSON.stringify(prontuarios));
+}, [prontuarios]);
+
   function layout(children) {
     return (
       <div style={{ display: "flex", minHeight: "100vh", background: colors.bg }}>
@@ -270,7 +287,7 @@ export default function App() {
         </div>
       <div style={card}>
         <button style={btnGhost} onClick={() => setScreen("novoUsuario")}>Cadastrar usuário</button>
-        <button style={{ ...btnDanger, marginLeft: 12 }} onClick={() => {localStorage.removeItem("currentUser");setCurrentUser(null);setScreen("login");}}>Logout</button>
+        <button onClick={() => {localStorage.removeItem("currentUser");setCurrentUser(null);setScreen("login");}}>Logout</button>
       </div>
     </>
   );
