@@ -164,6 +164,7 @@ export default function App() {
   const [busca, setBusca] = useState("");
   const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
   const [prontuarios, setProntuarios] = useState({});
+  const [pacienteProntuario, setPacienteProntuario] = useState(null);
   const [usuarios, setUsuarios] = useState([
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
@@ -384,6 +385,7 @@ useEffect(() => {
                   { data: new Date().toISOString(), texto }
                 ]
               }));
+              setPacienteProntuario(pacienteSelecionado);
               setScreen("prontuario");
             }}>Salvar atendimento</button>
         </div>
@@ -444,12 +446,14 @@ case "editarPaciente":
     </>
   );
   case "prontuario":
-  if (!pacienteSelecionado) return null;
-  const chave = `${currentUser.email}_${pacienteSelecionado.id}`;
+  if (!pacienteProntuario) return null;
+
+  const chave = `${currentUser.email}_${pacienteProntuario.id}`;
   const lista = prontuarios[chave] || [];
+
   return layout(
     <>
-      <h2>Prontuário – {pacienteSelecionado.nome}</h2>
+     <h2>Prontuário – {pacienteProntuario.nome}</h2>
       {lista.length === 0 && (
         <div style={card}>
           <p style={{ color: "#777" }}>Nenhum atendimento registrado.</p>
