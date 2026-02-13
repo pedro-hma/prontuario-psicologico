@@ -135,6 +135,23 @@ function calcularIdade(data) {
   if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
   return idade;
 }
+async function buscarCEP(cep) {
+  if (cep.length !== 8) return;
+  const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+  const data = await res.json();
+  if (data.erro) {
+    alert("CEP inválido");
+    return;
+  }
+  document.getElementById("rua").value = data.logradouro;
+  document.getElementById("bairro").value = data.bairro;
+  document.getElementById("cidade").value = data.localidade;
+  document.getElementById("estado").value = data.uf;
+}
+function formatarDataBR(dataISO) {
+  const [ano, mes, dia] = dataISO.split("-");
+  return `${dia}/${mes}/${ano}`;
+}
 /* ===================== APP ===================== */
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -150,7 +167,7 @@ export default function App() {
   const [usuarios, setUsuarios] = useState([
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
-  const hoje = "2026-02-10";
+ const hoje = new Date().toISOString().split("T")[0];
   useEffect(() => {
   const usuariosSalvos = localStorage.getItem("usuarios");
   const userSalvo = localStorage.getItem("currentUser");
@@ -263,13 +280,8 @@ export default function App() {
     <>
       <div style={pageHeader}>
         <button style={btnGhost} onClick={() => setScreen("menu")}>← Voltar</button>
-        <input
-          style={inputStyled}
-          placeholder="Buscar paciente"
-          onChange={(e) => setBusca(e.target.value)}
-        />
+        <input style={inputStyled} placeholder="Buscar paciente" onChange={(e) => setBusca(e.target.value)}/>
       </div>
-
       {pacientes
        .filter(p => p.owner === currentUser?.email)
         .filter(p => p.nome.toLowerCase().includes(busca.toLowerCase()))
@@ -277,7 +289,6 @@ export default function App() {
         .map(p => (
           <div key={p.id} style={card}>
             <strong>{p.nome}</strong>
-
             <div style={listActions}>
               <button style={btnGhost} onClick={() => { setPacienteSelecionado(p); setScreen("dadosPaciente"); }}>Dados</button>
               <button style={btnGhost} onClick={() => { setPacienteSelecionado(p); setScreen("editarPaciente"); }}>Editar</button>
@@ -305,7 +316,7 @@ export default function App() {
         .sort((a, b) => `${a.data} ${a.hora}`.localeCompare(`${b.data} ${b.hora}`))
         .map(c => (
           <div key={c.id} style={card}>
-            <strong>{c.paciente}</strong> – {c.data} {c.hora}
+            <strong>{c.paciente}</strong> – {formatarDataBR(c.data)}{c.hora}
             <Status status={c.status} />
             {c.status === "agendado" && (
               <button style={{ ...btnDanger, marginLeft: 12 }}onClick={() => cancelarConsulta(c.id)}>Cancelar</button>
@@ -366,9 +377,17 @@ case "editarPaciente":
   return layout(
     <>
       <h2>{screen === "novoPaciente" ? "Novo paciente" : "Editar paciente"}</h2>
+      <button style={btnGhost}onClick={() => setScreen("pacientes")}>← Voltar para pacientes</button>
       <div style={card}>
         <input style={inputStyled} id="nome" placeholder="Nome" defaultValue={pacienteSelecionado?.nome || ""} />
         <input style={inputStyled} id="cpf" placeholder="CPF" defaultValue={pacienteSelecionado?.cpf || ""} />
+        <input style={inputStyled} id="cep" placeholder="CEP"onBlur={e => buscarCEP(e.target.value)}/>
+        <input style={inputStyled} id="rua" placeholder="Rua" />
+        <input style={inputStyled} id="bairro" placeholder="Bairro" />
+        <input style={inputStyled} id="cidade" placeholder="Cidade" />
+        <input style={inputStyled} id="estado" placeholder="Estado" />
+        <input style={inputStyled} id="numero" placeholder="Número" />
+        <input style={inputStyled} id="complemento" placeholder="Complemento" />
         <input style={inputStyled} type="date"id="nasc"onChange={e => document.getElementById("idade").value = calcularIdade(e.target.value)}/>
         <input style={inputStyled} id="idade" placeholder="Idade" disabled />
         <select style={inputStyled} id="pagamento">
@@ -376,60 +395,54 @@ case "editarPaciente":
           <option>Cartão</option>
           <option>Boleto</option>
         </select>
-        <button style={btnPrimary} onClick={() => {
-          const novo = {
-            id: pacienteSelecionado?.id || Date.now(),
-            nome: document.getElementById("nome").value,
-            cpf: document.getElementById("cpf").value,
-            pagamento: document.getElementById("pagamento").value,
-            owner: currentUser.email
-          };
-          setPacientes(prev =>
-            screen === "novoPaciente"
-              ? [...prev, novo]
-              : prev.map(p => p.id === novo.id ? novo : p)
-          );
-          setScreen("pacientes");
-        }}>Salvar</button>
+        <button
+  style={btnPrimary}
+  onClick={() => {
+    const nome = document.getElementById("nome").value;
+    const cpf = document.getElementById("cpf").value;
+    const pagamento = document.getElementById("pagamento").value;
+    const cep = document.getElementById("cep").value;
+    const numero = document.getElementById("numero").value;
+    if (!nome || !cpf || !pagamento || !cep || !numero) {
+      alert("Preencha todos os campos obrigatórios");
+      return;
+    }
+    const novo = {
+      id: pacienteSelecionado?.id || Date.now(),
+      nome,
+      cpf,
+      pagamento,
+      cep,
+      owner: currentUser.email
+    };
+    setPacientes(prev =>
+      screen === "novoPaciente"
+        ? [...prev, novo]
+        : prev.map(p => p.id === novo.id ? novo : p)
+    );
+    setScreen("pacientes");
+  }}>Salvar</button>
       </div>
     </>
   );
   case "prontuario":
   if (!pacienteSelecionado) return null;
-
   const chave = `${currentUser.email}_${pacienteSelecionado.id}`;
   const lista = prontuarios[chave] || [];
-
   return layout(
     <>
       <h2>Prontuário – {pacienteSelecionado.nome}</h2>
-
       {lista.length === 0 && (
         <div style={card}>
           <p style={{ color: "#777" }}>Nenhum atendimento registrado.</p>
         </div>
       )}
-
       {lista
         .sort((a, b) => new Date(a.data) - new Date(b.data))
         .map((item, index) => (
-          <div key={index} style={card}>
-            <strong>
-              {new Date(item.data).toLocaleDateString()}
-            </strong>
-            <p style={{ marginTop: 8 }}>{item.texto}</p>
-          </div>
-        ))}
-
+          <button style={btnGhost}onClick={() => {setTextoEdicao(item.texto);setIndexEdicao(index);setScreen("editarAtendimento");}}> Editar</button>))}
       {/* AÇÕES FINAIS */}
       <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
-        <button
-          style={btnGhost}
-          onClick={() => setScreen("novoAtendimento")}
-        >
-          Editar
-        </button>
-
         <button style={btnDanger}onClick={() => {
            if (!window.confirm("Tem certeza que deseja apagar TODO o prontuário deste paciente?"))
               return;
