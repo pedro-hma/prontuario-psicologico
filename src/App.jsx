@@ -165,6 +165,9 @@ export default function App() {
   const [pacienteSelecionado, setPacienteSelecionado] = useState(null);
   const [prontuarios, setProntuarios] = useState({});
   const [pacienteProntuario, setPacienteProntuario] = useState(null);
+  const [textoAtendimento, setTextoAtendimento] = useState("");
+  const [textoEdicao, setTextoEdicao] = useState("");
+  const [indexEdicao, setIndexEdicao] = useState(null);
   const [usuarios, setUsuarios] = useState([
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
@@ -366,28 +369,31 @@ useEffect(() => {
             ))}
         </select>
         {/* TEXTO DO ATENDIMENTO */}
-        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}> Descrição do atendimento </label>
-        <textarea id="texto" placeholder="Escreva o atendimento..."style={{
-            ...inputStyled,
-            height: 180,
-            resize: "vertical"
-          }}
-        />
+       <textarea placeholder="Escreva o atendimento..."value={textoAtendimento}onChange={e => setTextoAtendimento(e.target.value)} style={{
+    ...inputStyled,
+    height: 180,
+    resize: "vertical"
+  }}
+/>
         {/* BOTÃO */}
         <div style={{ marginTop: 16, textAlign: "right" }}>
-          <button style={btnPrimary} onClick={() => {
-              const texto = document.getElementById("texto").value;
-              if (!texto) return alert("Texto obrigatório");
-              setProntuarios(prev => ({
-                ...prev,
-                [`${currentUser.email}_${pacienteSelecionado.id}`]: [
-                  ...(prev[`${currentUser.email}_${pacienteSelecionado.id}`] || []),
-                  { data: new Date().toISOString(), texto }
-                ]
-              }));
-              setPacienteProntuario(pacienteSelecionado);
-              setScreen("prontuario");
-            }}>Salvar atendimento</button>
+          <button style={btnPrimary}onClick={() => {
+            if (!pacienteSelecionado)
+              return alert("Selecione um paciente");
+            if (!textoAtendimento.trim())
+              return alert("Texto obrigatório");
+            const chave = `${currentUser.email}_${pacienteSelecionado.id}`;
+            setProntuarios(prev => ({...prev,[chave]: [...(prev[chave] || []),{
+              data: new Date().toISOString(),texto: textoAtendimento
+        }]
+    }));
+    setTextoAtendimento("");
+    setPacienteProntuario(pacienteSelecionado);
+    setScreen("prontuario");
+  }}
+>
+  Salvar atendimento
+</button>
         </div>
       </div>
     </>
@@ -459,10 +465,15 @@ case "editarPaciente":
           <p style={{ color: "#777" }}>Nenhum atendimento registrado.</p>
         </div>
       )}
-      {lista
-        .sort((a, b) => new Date(a.data) - new Date(b.data))
-        .map((item, index) => (
-          <button style={btnGhost}onClick={() => {setTextoEdicao(item.texto);setIndexEdicao(index);setScreen("editarAtendimento");}}> Editar</button>))}
+     {lista
+     .sort((a, b) => new Date(a.data) - new Date(b.data))
+     .map((item, index) => (
+    <div key={index} style={card}>
+      <small style={{ color: "#666" }}>{new Date(item.data).toLocaleString()}</small>
+      <p style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>{item.texto}</p>
+      <button style={btnGhost}onClick={() => {setTextoEdicao(item.texto);setIndexEdicao(index);setScreen("editarAtendimento");}}>Editar</button>
+    </div>
+  ))}
       {/* AÇÕES FINAIS */}
       <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
         <button style={btnDanger}onClick={() => {
@@ -587,6 +598,56 @@ case "editarPaciente":
               ]);
               setScreen("agenda");
             }}>Salvar agendamento
+          </button>
+        </div>
+      </div>
+    </>
+  );
+  case "editarAtendimento":
+  if (!pacienteProntuario || indexEdicao === null) return null;
+  return layout(
+    <>
+      <h2>Editar atendimento – {pacienteProntuario.nome}</h2>
+      <div style={{...card, maxWidth: 700}}>
+        {/* TEXTO */}
+        <label style={{ fontWeight: 500, marginBottom: 6, display: "block" }}> Descrição do atendimento</label>
+        <textarea  id="textoEdicao"defaultValue={textoEdicao} style={{...inputStyled,height: 180,resize: "vertical"}}/>
+        {/* BOTÕES */}
+        <div style={{ marginTop: 16, textAlign: "right" }}>
+          <button style={btnDanger}onClick={() => {
+            if (!window.confirm("Excluir este atendimento?")) return;
+              setProntuarios(prev => {
+                const lista = [...(prev[`${currentUser.email}_${pacienteProntuario.id}`] ||[])];
+                lista.splice(indexEdicao, 1);
+                return {
+                  ...prev,
+                  [`${currentUser.email}_${pacienteProntuario.id}`]: lista
+                };
+              });
+              setIndexEdicao(null);
+              setTextoEdicao("");
+              setScreen("prontuario");
+            }}
+          >
+            Excluir
+          </button>
+          <button style={{ ...btnGhost, marginLeft: 8 }} onClick={() => setScreen("prontuario")}>Cancelar</button>
+          <button style={{ ...btnPrimary, marginLeft: 8 }}onClick={() => {
+              const texto = document.getElementById("textoEdicao").value;
+              if (!texto) {
+                alert("Texto obrigatório");
+                return;
+              }
+              setProntuarios(prev => {const lista = [...(prev[`${currentUser.email}_${pacienteProntuario.id}`] ||[])];
+                lista[indexEdicao] = {...lista[indexEdicao],texto};
+                return {...prev,[`${currentUser.email}_${pacienteProntuario.id}`]: lista};
+              });
+              setIndexEdicao(null);
+              setTextoEdicao("");
+              setScreen("prontuario");
+            }}
+          >
+            Salvar alterações
           </button>
         </div>
       </div>
