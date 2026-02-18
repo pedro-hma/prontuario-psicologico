@@ -279,6 +279,10 @@ useEffect(() => {
         <div style={{ ...card, flex: 1 }}>
           <h3>Consultas hoje</h3>
           <strong style={{ fontSize: 32 }}>{consultasHoje.length}</strong>
+          <div style={{ ...card, marginBottom: 24 }}>
+            <strong style={{ fontSize: 16 }}>{currentUser.displayName || "Profissional"}</strong>
+        <div style={{ color: "#777", fontSize: 13 }}>{currentUser.email}</div>
+      </div>
         </div>
         </div>
         <div style={card}>
