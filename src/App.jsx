@@ -313,7 +313,7 @@ useEffect(() => {
             <div style={listActions}>
               <button style={btnGhost} onClick={() => { setPacienteSelecionado(p); setScreen("dadosPaciente"); }}>Dados</button>
               <button style={btnGhost} onClick={() => { setPacienteSelecionado(p); setScreen("editarPaciente"); }}>Editar</button>
-              <button style={btnPrimary} onClick={() => { setPacienteSelecionado(p); setScreen("prontuario"); }}>Prontuário</button>
+              <button style={btnPrimary}onClick={() => {setPacienteProntuario(p);setScreen("prontuario");}}>Prontuário</button>
               <button style={btnDanger}onClick={() => {
                 if (!window.confirm("Deseja remover este paciente?")) return;
                   setPacientes(prev => prev.filter(x => x.id !== p.id));
@@ -452,8 +452,11 @@ case "editarPaciente":
     </>
   );
   case "prontuario":
-  if (!pacienteProntuario) return null;
-
+    if (!pacienteProntuario) {
+      alert("Selecione um paciente");
+      setScreen("pacientes");
+      return null;
+}
   const chave = `${currentUser.email}_${pacienteProntuario.id}`;
   const lista = prontuarios[chave] || [];
 
