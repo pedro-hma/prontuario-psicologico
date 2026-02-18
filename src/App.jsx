@@ -487,6 +487,44 @@ case "editarPaciente":
       </div>
       <br />
       <button style={btnGhost} onClick={() => setScreen("pacientes")}>← Voltar</button>
+      <button style={btnPrimary}onClick={() => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const chave = `${currentUser.email}_${pacienteProntuario.id}`;
+        const lista = prontuarios[chave] || []; 
+        let y = 20;
+        doc.setFontSize(16);
+         doc.text("Prontuário do Paciente", 14, y);
+         y += 10;
+         doc.setFontSize(12); 
+         doc.text(`Paciente: ${pacienteProntuario.nome}`, 14, y);
+         y += 8; 
+         doc.text(`Gerado em: ${new Date().toLocaleString()}`, 14, y);
+         y += 12;
+         if (lista.length === 0) {
+          doc.text("Nenhum atendimento registrado.", 14, y);
+    } else {
+      lista
+        .sort((a, b) => new Date(a.data) - new Date(b.data))
+        .forEach((item, index) => {
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.setFont(undefined, "bold");
+          doc.text(
+            `Atendimento ${index + 1} - ${new Date(item.data).toLocaleString()}`,
+            14,
+            y
+          );
+          y += 6;
+          doc.setFont(undefined, "normal");
+          const linhas = doc.splitTextToSize(item.texto, 180);
+          doc.text(linhas, 14, y);
+          y += linhas.length * 6 + 6;
+        });
+    }
+    doc.save(`prontuario_${pacienteProntuario.nome}.pdf`);}}>Gerar PDF</button>
     </>
   );
   case "dadosPaciente":
