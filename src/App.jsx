@@ -1,5 +1,6 @@
 import { FiEye, FiEyeOff, FiCalendar } from "react-icons/fi";
 import React, { useState, useEffect } from "react";
+import { updateProfile } from "firebase/auth";
 
 /* ===================== ESTILO ===================== */
 const colors = {
@@ -210,21 +211,25 @@ useEffect(() => {
       </div>
     );
   }
-  function handleLogin() {
-  if (!loginEmail || !loginPass) {
-    alert("Informe email e senha");
-    return;
-  }
-  const user = usuarios.find(
-    u => u.email === loginEmail && u.password === loginPass
-  );
-  if (!user) {
+  useEffect(() => {
+  const unsub = onAuthStateChanged(auth, user => {
+    setCurrentUser(user);
+  });
+  return () => unsub();
+}, []);
+async function handleLogin() {
+  try {
+    const cred = await signInWithEmailAndPassword(auth,loginEmail,loginPass);
+    if (!cred.user.displayName) {
+      await updateProfile(cred.user, {
+        displayName: "Dr. Pedro Henrique"
+      });
+    }
+    setScreen("menu");
+  } catch (err) {
+    console.error(err);
     alert("Email ou senha inválidos");
-    return;
   }
-  setCurrentUser(user);
-  localStorage.setItem("currentUser", JSON.stringify(user));
-  setScreen("menu");
 }
   function cancelarConsulta(id) {
     if (!window.confirm("Deseja realmente cancelar esta consulta?")) return;
@@ -234,7 +239,6 @@ useEffect(() => {
       )
     );
   }
-
   /* ===================== TELAS ===================== */
   if (!currentUser && screen !== "login") {
   return (
