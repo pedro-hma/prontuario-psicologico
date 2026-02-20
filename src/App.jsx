@@ -305,6 +305,7 @@ useEffect(() => {
     <>
       <div style={pageHeader}>
         <button style={btnGhost} onClick={() => setScreen("menu")}>← Voltar</button>
+         <button style={btnGhost} onClick={() => setScreen("novoPaciente")}>Novo paciente</button>
         <input style={inputStyled} placeholder="Buscar paciente" onChange={(e) => setBusca(e.target.value)}/>
       </div>
       {pacientes
