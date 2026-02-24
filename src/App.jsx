@@ -181,6 +181,14 @@ export default function App() {
   const [usuarios, setUsuarios] = useState([
   { email: "admin@email.com", password: "123456", name: "Administrador" }
 ]);
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY",
+  authDomain: "SEU_AUTH_DOMAIN",
+  projectId: "SEU_PROJECT_ID",
+  storageBucket: "SEU_STORAGE_BUCKET",
+  messagingSenderId: "SEU_MESSAGING_SENDER_ID",
+  appId: "SEU_APP_ID"
+};
  const hoje = new Date().toISOString().split("T")[0];
  useEffect(() => {
   const usuariosSalvos = localStorage.getItem("usuarios");
