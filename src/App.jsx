@@ -9,7 +9,6 @@ import {
   setPersistence,
   browserLocalPersistence
 } from "firebase/auth";
-
 /* ===================== ESTILO ===================== */
 const colors = {
   bg: "#f2f5f4",
